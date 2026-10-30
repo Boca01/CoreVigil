@@ -1,0 +1,48 @@
+﻿<Window x:Class="CoreVigil.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CoreVigil"
+        Width="420"
+        Height="260"
+        WindowStartupLocation="CenterScreen"
+        Background="#10131A">
+
+    <Grid Margin="32">
+        <StackPanel VerticalAlignment="Center">
+
+            <TextBlock Text="COREVIGIL"
+                       Foreground="#6FA8FF"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock Text="CPU"
+                       Margin="0,20,0,0"
+                       Foreground="#AEB8C8"
+                       FontSize="18"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock Text="{Binding CpuUsageText}"
+                       Margin="0,4,0,0"
+                       Foreground="White"
+                       FontSize="54"
+                       FontWeight="Light"
+                       HorizontalAlignment="Center" />
+
+            <ProgressBar Value="{Binding CpuUsagePercent, Mode=OneWay}"
+                     Minimum="0"
+                     Maximum="100"
+                     Height="8"
+                     Margin="20,16,20,0"
+                     Foreground="#4C8DFF"
+                     Background="#252B36" />
+
+            <TextBlock Text="{Binding StatusText}"
+                       Margin="0,18,0,0"
+                       Foreground="#7F8999"
+                       FontSize="12"
+                       HorizontalAlignment="Center" />
+
+        </StackPanel>
+    </Grid>
+</Window>
