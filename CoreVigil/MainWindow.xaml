@@ -2,13 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CoreVigil"
-        Width="420"
-        Height="260"
+        Width="542"
+        Height="470"
         WindowStartupLocation="CenterScreen"
         Background="#10131A">
 
     <Grid Margin="32">
-        <StackPanel VerticalAlignment="Center">
+        <StackPanel VerticalAlignment="Center" Height="370">
 
             <TextBlock Text="COREVIGIL"
                        Foreground="#6FA8FF"
@@ -28,6 +28,35 @@
                        FontSize="54"
                        FontWeight="Light"
                        HorizontalAlignment="Center" />
+
+            <StackPanel Margin="0,12,0,0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+
+                <TextBlock Text="FRECUENCIA"
+               Foreground="#7F8999"
+               FontSize="12"
+               VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding CpuFrequencyText}"
+               Margin="10,0,0,0"
+               Foreground="#6FA8FF"
+               FontSize="18"
+               FontWeight="SemiBold"
+               VerticalAlignment="Center" />
+
+                <TextBlock Text=" / "
+           Margin="4,0,4,0"
+           Foreground="#7F8999"
+           FontSize="16"
+           VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding CpuMaximumFrequencyText}"
+           Foreground="#AEB8C8"
+           FontSize="16"
+           VerticalAlignment="Center" />
+
+            </StackPanel>
 
             <ProgressBar Value="{Binding CpuUsagePercent, Mode=OneWay}"
                      Minimum="0"

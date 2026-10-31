@@ -10,6 +10,7 @@ namespace CoreVigil
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _viewModel;
+        private readonly CpuFrequencyMonitor _cpuFrequencyMonitor;
         private readonly CancellationTokenSource _monitoringCancellation;
 
         public MainWindow()
@@ -18,7 +19,12 @@ namespace CoreVigil
 
             var cpuMonitor = new CpuMonitor();
 
-            _viewModel = new MainViewModel(cpuMonitor);
+            _cpuFrequencyMonitor = new CpuFrequencyMonitor();
+
+            _viewModel = new MainViewModel(
+                cpuMonitor,
+                _cpuFrequencyMonitor);
+
             _monitoringCancellation = new CancellationTokenSource();
 
             DataContext = _viewModel;
@@ -40,6 +46,8 @@ namespace CoreVigil
             EventArgs e)
         {
             _monitoringCancellation.Cancel();
+
+            _cpuFrequencyMonitor.Dispose();
             _monitoringCancellation.Dispose();
         }
     }
