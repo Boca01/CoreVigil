@@ -12,21 +12,33 @@ namespace CoreVigil.ViewModels
         private readonly ICpuMonitor _cpuMonitor;
         private readonly ICpuFrequencyMonitor _cpuFrequencyMonitor;
         private readonly ISystemUptimeProvider _systemUptimeProvider;
+        private readonly IProcessorInfoProvider _processorInfoProvider;
         private double _cpuUsagePercent;
         private double _cpuFrequencyMhz;
         private double _cpuMaximumFrequencyMhz;
         private double _cpuFrequencyLimitMhz;
         private string _statusText = "Preparando monitor...";
         private TimeSpan _systemUptime;
+        private string _processorName = "Procesador desconocido";
+        private int _logicalProcessorCount;
 
         public MainViewModel(
             ICpuMonitor cpuMonitor,
             ICpuFrequencyMonitor cpuFrequencyMonitor,
-            ISystemUptimeProvider systemUptimeProvider)
+            ISystemUptimeProvider systemUptimeProvider,
+            IProcessorInfoProvider processorInfoProvider)
         {
             _cpuMonitor = cpuMonitor;
             _cpuFrequencyMonitor = cpuFrequencyMonitor;
             _systemUptimeProvider = systemUptimeProvider;
+            _processorInfoProvider = processorInfoProvider;
+
+            var processorInfo =
+                _processorInfoProvider.GetProcessorInfo();
+
+            _processorName = processorInfo.Name;
+            _logicalProcessorCount =
+                processorInfo.LogicalProcessorCount;
         }
         public double CpuUsagePercent
         {
@@ -147,9 +159,15 @@ namespace CoreVigil.ViewModels
             $"{SystemUptime.Minutes:00}:" +
             $"{SystemUptime.Seconds:00}";
 
+        public string ProcessorName =>
+            _processorName;
+
+        public int LogicalProcessorCount =>
+            _logicalProcessorCount;
         public async Task StartMonitoringAsync(
             CancellationToken cancellationToken = default)
         {
+
             StatusText = "Monitorizando CPU";
 
             while (!cancellationToken.IsCancellationRequested)

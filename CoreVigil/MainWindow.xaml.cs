@@ -18,14 +18,21 @@ namespace CoreVigil
             InitializeComponent();
 
             var cpuMonitor = new CpuMonitor();
-            var systemUptimeProvider = new SystemUptimeProvider();
 
-            _cpuFrequencyMonitor = new CpuFrequencyMonitor();
+            var systemUptimeProvider =
+                new SystemUptimeProvider();
+
+            var processorInfoProvider =
+                new WindowsProcessorInfoProvider();
+
+            _cpuFrequencyMonitor =
+                new CpuFrequencyMonitor();
 
             _viewModel = new MainViewModel(
                 cpuMonitor,
                 _cpuFrequencyMonitor,
-                systemUptimeProvider);
+                systemUptimeProvider,
+                processorInfoProvider);
 
             _monitoringCancellation = new CancellationTokenSource();
 

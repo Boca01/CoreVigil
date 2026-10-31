@@ -16,6 +16,15 @@
                        FontWeight="SemiBold"
                        HorizontalAlignment="Center" />
 
+            <TextBlock Text="{Binding ProcessorName}"
+                       Margin="0,6,0,0"
+                       Foreground="#7F8999"
+                       FontSize="11"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       MaxWidth="350" />
+
             <TextBlock Text="CPU"
                        Margin="0,20,0,0"
                        Foreground="#AEB8C8"
