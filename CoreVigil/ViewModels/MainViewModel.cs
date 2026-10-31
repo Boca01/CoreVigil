@@ -2,7 +2,6 @@
 using CoreVigil.Core.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using CoreVigil.Core.Models;
 
 namespace CoreVigil.ViewModels
 {
