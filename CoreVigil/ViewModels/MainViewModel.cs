@@ -11,21 +11,23 @@ namespace CoreVigil.ViewModels
     {
         private readonly ICpuMonitor _cpuMonitor;
         private readonly ICpuFrequencyMonitor _cpuFrequencyMonitor;
-
+        private readonly ISystemUptimeProvider _systemUptimeProvider;
         private double _cpuUsagePercent;
         private double _cpuFrequencyMhz;
         private double _cpuMaximumFrequencyMhz;
         private double _cpuFrequencyLimitMhz;
         private string _statusText = "Preparando monitor...";
+        private TimeSpan _systemUptime;
 
         public MainViewModel(
             ICpuMonitor cpuMonitor,
-            ICpuFrequencyMonitor cpuFrequencyMonitor)
+            ICpuFrequencyMonitor cpuFrequencyMonitor,
+            ISystemUptimeProvider systemUptimeProvider)
         {
             _cpuMonitor = cpuMonitor;
             _cpuFrequencyMonitor = cpuFrequencyMonitor;
+            _systemUptimeProvider = systemUptimeProvider;
         }
-
         public double CpuUsagePercent
         {
             get => _cpuUsagePercent;
@@ -121,6 +123,30 @@ namespace CoreVigil.ViewModels
             }
         }
 
+        public TimeSpan SystemUptime
+        {
+            get => _systemUptime;
+
+            private set
+            {
+                if (_systemUptime == value)
+                {
+                    return;
+                }
+
+                _systemUptime = value;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SystemUptimeText));
+            }
+        }
+
+        public string SystemUptimeText =>
+            $"{(int)SystemUptime.TotalDays}d " +
+            $"{SystemUptime.Hours:00}:" +
+            $"{SystemUptime.Minutes:00}:" +
+            $"{SystemUptime.Seconds:00}";
+
         public async Task StartMonitoringAsync(
             CancellationToken cancellationToken = default)
         {
@@ -149,6 +175,9 @@ namespace CoreVigil.ViewModels
 
                     CpuFrequencyLimitMhz =
                         frequencySnapshot.LimitMhz;
+
+                    SystemUptime =
+                    _systemUptimeProvider.GetUptime();
 
                     await Task.Delay(
                         TimeSpan.FromSeconds(1),
