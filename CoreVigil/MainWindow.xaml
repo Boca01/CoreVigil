@@ -39,8 +39,8 @@
                        HorizontalAlignment="Center" />
 
             <StackPanel Margin="0,12,0,0"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
 
                 <TextBlock Text="FRECUENCIA"
                Foreground="#7F8999"
@@ -56,21 +56,21 @@
                 
 
                 <TextBlock Text=" / "
-           Margin="4,0,4,0"
-           Foreground="#7F8999"
-           FontSize="16"
-           VerticalAlignment="Center" />
+                   Margin="4,0,4,0"
+                   Foreground="#7F8999"
+                   FontSize="16"
+                   VerticalAlignment="Center" />
 
                 <TextBlock Text="{Binding CpuMaximumFrequencyText}"
-           Foreground="#AEB8C8"
-           FontSize="16"
-           VerticalAlignment="Center" />
+                   Foreground="#AEB8C8"
+                   FontSize="16"
+                   VerticalAlignment="Center" />
 
             </StackPanel>
 
             <StackPanel Margin="0,10,0,0"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
 
                 <TextBlock Text="UPTIME"
                Foreground="#7F8999"
