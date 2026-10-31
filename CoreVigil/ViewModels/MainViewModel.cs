@@ -1,6 +1,8 @@
-﻿using System.ComponentModel;
+﻿using CoreVigil.Core.Abstractions;
+using CoreVigil.Core.Models;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using CoreVigil.Core.Abstractions;
+using CoreVigil.Core.Models;
 
 namespace CoreVigil.ViewModels
 {
@@ -13,6 +15,7 @@ namespace CoreVigil.ViewModels
         private readonly ICpuFrequencyMonitor _cpuFrequencyMonitor;
         private readonly ISystemUptimeProvider _systemUptimeProvider;
         private readonly IProcessorInfoProvider _processorInfoProvider;
+        private readonly IProcessMonitor _processMonitor;
         private double _cpuUsagePercent;
         private double _cpuFrequencyMhz;
         private double _cpuMaximumFrequencyMhz;
@@ -21,17 +24,21 @@ namespace CoreVigil.ViewModels
         private TimeSpan _systemUptime;
         private string _processorName = "Procesador desconocido";
         private int _logicalProcessorCount;
+        private IReadOnlyList<ProcessSnapshot> _topProcesses =
+    Array.Empty<ProcessSnapshot>();
 
         public MainViewModel(
             ICpuMonitor cpuMonitor,
             ICpuFrequencyMonitor cpuFrequencyMonitor,
             ISystemUptimeProvider systemUptimeProvider,
-            IProcessorInfoProvider processorInfoProvider)
+            IProcessorInfoProvider processorInfoProvider,
+            IProcessMonitor processMonitor)
         {
             _cpuMonitor = cpuMonitor;
             _cpuFrequencyMonitor = cpuFrequencyMonitor;
             _systemUptimeProvider = systemUptimeProvider;
             _processorInfoProvider = processorInfoProvider;
+            _processMonitor = processMonitor;
 
             var processorInfo =
                 _processorInfoProvider.GetProcessorInfo();
@@ -164,6 +171,16 @@ namespace CoreVigil.ViewModels
 
         public int LogicalProcessorCount =>
             _logicalProcessorCount;
+        public IReadOnlyList<ProcessSnapshot> TopProcesses
+        {
+            get => _topProcesses;
+
+            private set
+            {
+                _topProcesses = value;
+                OnPropertyChanged();
+            }
+        }
         public async Task StartMonitoringAsync(
             CancellationToken cancellationToken = default)
         {
@@ -196,6 +213,11 @@ namespace CoreVigil.ViewModels
 
                     SystemUptime =
                     _systemUptimeProvider.GetUptime();
+
+                    TopProcesses =
+                    await _processMonitor.GetTopProcessesAsync(
+                        3,
+                        cancellationToken);
 
                     await Task.Delay(
                         TimeSpan.FromSeconds(1),
