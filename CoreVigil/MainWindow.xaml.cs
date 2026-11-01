@@ -71,6 +71,20 @@ namespace CoreVigil
             }
         }
 
+        private void OnMinimizeButtonClick(
+            object sender,
+            RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void OnCloseButtonClick(
+            object sender,
+            RoutedEventArgs e)
+        {
+            Close();
+        }
+
         private void OnWindowClosed(
             object? sender,
             EventArgs e)

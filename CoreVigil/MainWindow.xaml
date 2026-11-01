@@ -25,7 +25,37 @@
 
             <StackPanel VerticalAlignment="Center">
 
-            <TextBlock Text="COREVIGIL"
+                <Grid Margin="0,0,0,4">
+
+                    <StackPanel HorizontalAlignment="Right"
+                Orientation="Horizontal">
+
+                        <Button Width="28"
+                Height="24"
+                Margin="0,0,4,0"
+                Background="Transparent"
+                BorderThickness="0"
+                Foreground="#7F8999"
+                FontSize="16"
+                Content="−"
+                ToolTip="Minimizar"
+                Click="OnMinimizeButtonClick" />
+
+                        <Button Width="28"
+                Height="24"
+                Background="Transparent"
+                BorderThickness="0"
+                Foreground="#7F8999"
+                FontSize="16"
+                Content="×"
+                ToolTip="Cerrar"
+                Click="OnCloseButtonClick" />
+
+                    </StackPanel>
+
+                </Grid>
+
+                <TextBlock Text="COREVIGIL"
                        Foreground="#6FA8FF"
                        FontSize="16"
                        FontWeight="SemiBold"
