@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using CoreVigil.Monitoring;
 using CoreVigil.ViewModels;
+using System.Windows.Input;
 
 namespace CoreVigil
 {
@@ -48,7 +49,9 @@ namespace CoreVigil
 
             Loaded += OnWindowLoaded;
             Closed += OnWindowClosed;
+            MouseLeftButtonDown += OnWindowMouseLeftButtonDown;
         }
+
 
         private async void OnWindowLoaded(
             object sender,
@@ -56,6 +59,16 @@ namespace CoreVigil
         {
             await _viewModel.StartMonitoringAsync(
                 _monitoringCancellation.Token);
+        }
+
+        private void OnWindowMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
         }
 
         private void OnWindowClosed(

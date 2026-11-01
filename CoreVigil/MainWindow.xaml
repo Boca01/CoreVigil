@@ -5,10 +5,25 @@
         Width="542"
         Height="560"
         WindowStartupLocation="CenterScreen"
-        Background="#10131A">
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
 
-    <Grid Margin="32">
-        <StackPanel VerticalAlignment="Center">
+
+    <Grid Margin="20">
+
+        <Border CornerRadius="18"
+            BorderThickness="1"
+            BorderBrush="#334C8DFF"
+            Padding="24">
+
+            <Border.Background>
+                <SolidColorBrush Color="#10131A"
+                             Opacity="0.82" />
+            </Border.Background>
+
+            <StackPanel VerticalAlignment="Center">
 
             <TextBlock Text="COREVIGIL"
                        Foreground="#6FA8FF"
@@ -189,6 +204,9 @@
                        FontSize="12"
                        HorizontalAlignment="Center" />
 
-        </StackPanel>
+                </StackPanel>
+
+        </Border>
+
     </Grid>
 </Window>
