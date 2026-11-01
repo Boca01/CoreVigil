@@ -4,7 +4,7 @@
         Title="CoreVigil"
         Width="542"
         Height="560"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
