@@ -58,6 +58,8 @@ namespace CoreVigil
 
             DataContext = _viewModel;
 
+            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
             RestoreHudSettings();
 
             Loaded += OnWindowLoaded;
@@ -81,6 +83,20 @@ namespace CoreVigil
         {
             await _viewModel.StartMonitoringAsync(
                 _monitoringCancellation.Token);
+        }
+
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName !=
+                nameof(MainViewModel.CpuUsagePercent))
+            {
+                return;
+            }
+
+            _trayIconService.UpdateCpuUsage(
+                _viewModel.CpuUsagePercent);
         }
 
         private void RestoreHudSettings()
@@ -222,6 +238,7 @@ namespace CoreVigil
             EventArgs e)
         {
             _monitoringCancellation.Cancel();
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _cpuFrequencyMonitor.Dispose();
             _trayIconService.Dispose();
             _monitoringCancellation.Dispose();

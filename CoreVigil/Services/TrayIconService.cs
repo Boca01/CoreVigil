@@ -11,7 +11,7 @@ namespace CoreVigil.Services
     {
         private readonly NotifyIcon _notifyIcon;
         private readonly ContextMenuStrip _contextMenu;
-
+        private CpuTrayState _cpuState = CpuTrayState.Unknown;
         public TrayIconService()
         {
             _contextMenu = new ContextMenuStrip();
@@ -52,9 +52,52 @@ namespace CoreVigil.Services
                     EventArgs.Empty);
         }
 
+
         public event EventHandler? ShowRequested;
 
         public event EventHandler? ExitRequested;
+
+        public void UpdateCpuUsage(
+            double usagePercent)
+        {
+            CpuTrayState newState =
+                usagePercent switch
+                {
+                    < 40.0 => CpuTrayState.Low,
+                    < 70.0 => CpuTrayState.Medium,
+                    < 90.0 => CpuTrayState.High,
+                    _ => CpuTrayState.Critical
+                };
+
+            if (_cpuState == newState)
+            {
+                return;
+            }
+
+            _cpuState = newState;
+
+            _notifyIcon.Icon =
+                newState switch
+                {
+                    CpuTrayState.Low =>
+                        SystemIcons.Information,
+
+                    CpuTrayState.Medium =>
+                        SystemIcons.Application,
+
+                    CpuTrayState.High =>
+                        SystemIcons.Warning,
+
+                    CpuTrayState.Critical =>
+                        SystemIcons.Error,
+
+                    _ =>
+                        SystemIcons.Application
+                };
+
+            _notifyIcon.Text =
+                $"CoreVigil - CPU {usagePercent:F0}%";
+        }
 
         public void Dispose()
         {
@@ -63,4 +106,14 @@ namespace CoreVigil.Services
             _contextMenu.Dispose();
         }
     }
+
+    public enum CpuTrayState
+    {
+        Unknown,
+        Low,
+        Medium,
+        High,
+        Critical
+    }
+
 }
