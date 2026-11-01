@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CoreVigil.Core.Models;
 
 namespace CoreVigil.Core.Abstractions
 {
-    internal interface IMemoryMonitor
+    /// <summary>
+    /// Define el contrato para obtener muestras
+    /// del estado de la memoria física del sistema.
+    /// </summary>
+    public interface IMemoryMonitor
     {
+        MemorySnapshot GetSnapshot();
     }
 }

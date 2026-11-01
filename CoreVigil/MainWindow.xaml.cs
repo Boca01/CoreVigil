@@ -28,6 +28,9 @@ namespace CoreVigil
             var processMonitor =
                 new ProcessMonitor();
 
+            var memoryMonitor =
+                new MemoryMonitor();
+
             _cpuFrequencyMonitor =
                 new CpuFrequencyMonitor();
 
@@ -36,7 +39,8 @@ namespace CoreVigil
                 _cpuFrequencyMonitor,
                 systemUptimeProvider,
                 processorInfoProvider,
-                processMonitor);
+                processMonitor,
+                memoryMonitor);
 
             _monitoringCancellation = new CancellationTokenSource();
 

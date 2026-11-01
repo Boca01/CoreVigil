@@ -2,6 +2,7 @@
 using CoreVigil.Core.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace CoreVigil.ViewModels
 {
@@ -15,6 +16,7 @@ namespace CoreVigil.ViewModels
         private readonly ISystemUptimeProvider _systemUptimeProvider;
         private readonly IProcessorInfoProvider _processorInfoProvider;
         private readonly IProcessMonitor _processMonitor;
+        private readonly IMemoryMonitor _memoryMonitor;
         private double _cpuUsagePercent;
         private double _cpuFrequencyMhz;
         private double _cpuMaximumFrequencyMhz;
@@ -25,19 +27,28 @@ namespace CoreVigil.ViewModels
         private int _logicalProcessorCount;
         private IReadOnlyList<ProcessSnapshot> _topProcesses =
     Array.Empty<ProcessSnapshot>();
+        private DateTime _nextProcessRefreshUtc =
+    DateTime.MinValue;
+        private readonly Stopwatch _applicationUptime =
+    Stopwatch.StartNew();
+        private MemorySnapshot? _memorySnapshot;
+
+        private TimeSpan _applicationElapsed;
 
         public MainViewModel(
             ICpuMonitor cpuMonitor,
             ICpuFrequencyMonitor cpuFrequencyMonitor,
             ISystemUptimeProvider systemUptimeProvider,
             IProcessorInfoProvider processorInfoProvider,
-            IProcessMonitor processMonitor)
+            IProcessMonitor processMonitor,
+            IMemoryMonitor memoryMonitor)
         {
             _cpuMonitor = cpuMonitor;
             _cpuFrequencyMonitor = cpuFrequencyMonitor;
             _systemUptimeProvider = systemUptimeProvider;
             _processorInfoProvider = processorInfoProvider;
             _processMonitor = processMonitor;
+            _memoryMonitor = memoryMonitor;
 
             var processorInfo =
                 _processorInfoProvider.GetProcessorInfo();
@@ -158,6 +169,29 @@ namespace CoreVigil.ViewModels
                 OnPropertyChanged(nameof(SystemUptimeText));
             }
         }
+        public TimeSpan ApplicationElapsed
+        {
+            get => _applicationElapsed;
+
+            private set
+            {
+                if (_applicationElapsed == value)
+                {
+                    return;
+                }
+
+                _applicationElapsed = value;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ApplicationElapsedText));
+            }
+        }
+
+        public string ApplicationElapsedText =>
+            $"{(int)ApplicationElapsed.TotalDays}d " +
+            $"{ApplicationElapsed.Hours:00}:" +
+            $"{ApplicationElapsed.Minutes:00}:" +
+            $"{ApplicationElapsed.Seconds:00}";
 
         public string SystemUptimeText =>
             $"{(int)SystemUptime.TotalDays}d " +
@@ -180,6 +214,31 @@ namespace CoreVigil.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        public MemorySnapshot? MemorySnapshot
+        {
+            get => _memorySnapshot;
+
+            private set
+            {
+                _memorySnapshot = value;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(MemoryUsageText));
+                OnPropertyChanged(nameof(MemoryUsagePercentText));
+            }
+        }
+
+        public string MemoryUsageText =>
+            MemorySnapshot is null
+                ? "0.00 / 0.00 GB"
+                : $"{MemorySnapshot.UsedGigabytes:F2} / " +
+                  $"{MemorySnapshot.TotalGigabytes:F2} GB";
+
+        public string MemoryUsagePercentText =>
+            MemorySnapshot is null
+                ? "0.0 %"
+                : $"{MemorySnapshot.UsagePercent:F1} %";
         public async Task StartMonitoringAsync(
             CancellationToken cancellationToken = default)
         {
@@ -211,12 +270,24 @@ namespace CoreVigil.ViewModels
                         frequencySnapshot.LimitMhz;
 
                     SystemUptime =
-                    _systemUptimeProvider.GetUptime();
+                        _systemUptimeProvider.GetUptime();
 
-                    TopProcesses =
-                    await _processMonitor.GetTopProcessesAsync(
-                        3,
-                        cancellationToken);
+                    ApplicationElapsed =
+                        _applicationUptime.Elapsed;
+
+                    MemorySnapshot =
+                        _memoryMonitor.GetSnapshot();
+
+                    if (DateTime.UtcNow >= _nextProcessRefreshUtc)
+                    {
+                        TopProcesses =
+                            await _processMonitor.GetTopProcessesAsync(
+                                3,
+                                cancellationToken);
+
+                        _nextProcessRefreshUtc =
+                            DateTime.UtcNow.AddSeconds(3);
+                    }
 
                     await Task.Delay(
                         TimeSpan.FromSeconds(1),
