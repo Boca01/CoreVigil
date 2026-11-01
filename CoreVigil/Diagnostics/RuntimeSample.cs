@@ -10,11 +10,13 @@
 
         public TimeSpan ApplicationUptime { get; init; }
 
+        public double SampleIntervalMilliseconds { get; init; }
+
         public double SystemCpuPercent { get; init; }
 
         public double CpuFrequencyMhz { get; init; }
 
-        public double SystemMemoryPercent { get; init; }
+        public double SystemMemoryPercent { get; init; }    
 
         public double CoreVigilCpuPercent { get; init; }
 

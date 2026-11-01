@@ -37,6 +37,10 @@ namespace CoreVigil.Diagnostics
             TimeSpan processorTime =
                 _currentProcess.TotalProcessorTime;
 
+            double sampleIntervalMilliseconds =
+                CalculateSampleInterval(
+                    timestampUtc);
+
             double coreVigilCpuPercent =
                 CalculateCpuUsage(
                     processorTime,
@@ -53,6 +57,9 @@ namespace CoreVigil.Diagnostics
             {
                 Timestamp = DateTime.Now,
                 ApplicationUptime = applicationUptime,
+
+                SampleIntervalMilliseconds =
+                     sampleIntervalMilliseconds,
 
                 SystemCpuPercent =
                     systemCpuPercent,
@@ -81,6 +88,20 @@ namespace CoreVigil.Diagnostics
                 TrayState =
                     trayState
             };
+        }
+
+        private double CalculateSampleInterval(
+    DateTime currentTimestampUtc)
+        {
+            if (!_hasPreviousSample)
+            {
+                return 0.0;
+            }
+
+            return
+                (currentTimestampUtc -
+                 _previousTimestampUtc)
+                .TotalMilliseconds;
         }
 
         private double CalculateCpuUsage(

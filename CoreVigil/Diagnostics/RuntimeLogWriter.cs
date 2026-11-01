@@ -10,29 +10,103 @@ namespace CoreVigil.Diagnostics
     /// </summary>
     public sealed class RuntimeLogWriter
     {
+        private const int RetentionDays = 7;
+
+        private const long MaximumLogsSizeBytes =
+            25L * 1024L * 1024L;
         private readonly List<RuntimeSample> _buffer =
             new();
+        private readonly string _logsDirectory;
 
         private readonly string _logPath;
 
         public RuntimeLogWriter()
         {
-            string directory =
+            _logsDirectory =
                 Path.Combine(
                     Environment.GetFolderPath(
                         Environment.SpecialFolder.LocalApplicationData),
                     "CoreVigil",
                     "Logs");
 
-            Directory.CreateDirectory(directory);
+            Directory.CreateDirectory(
+                _logsDirectory);
+
+            CleanupOldLogs();
 
             string fileName =
                 $"runtime-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
 
             _logPath =
                 Path.Combine(
-                    directory,
+                    _logsDirectory,
                     fileName);
+
+        }
+
+        private void CleanupOldLogs()
+        {
+            try
+            {
+                DateTime retentionLimitUtc =
+                    DateTime.UtcNow.AddDays(
+                        -RetentionDays);
+
+                FileInfo[] logFiles =
+                    new DirectoryInfo(
+                        _logsDirectory)
+                    .GetFiles(
+                        "runtime-*.csv")
+                    .OrderBy(
+                        file => file.LastWriteTimeUtc)
+                    .ToArray();
+
+                foreach (FileInfo file in logFiles)
+                {
+                    if (file.LastWriteTimeUtc <
+                        retentionLimitUtc)
+                    {
+                        file.Delete();
+                    }
+                }
+
+                logFiles =
+                    new DirectoryInfo(
+                        _logsDirectory)
+                    .GetFiles(
+                        "runtime-*.csv")
+                    .OrderBy(
+                        file => file.LastWriteTimeUtc)
+                    .ToArray();
+
+                long totalSizeBytes =
+                    logFiles.Sum(
+                        file => file.Length);
+
+                foreach (FileInfo file in logFiles)
+                {
+                    if (totalSizeBytes <=
+                        MaximumLogsSizeBytes)
+                    {
+                        break;
+                    }
+
+                    long fileSize =
+                        file.Length;
+
+                    file.Delete();
+
+                    totalSizeBytes -=
+                        fileSize;
+                }
+            }
+            catch (Exception ex)
+            {
+                // La limpieza de logs es una tarea secundaria.
+                // Un fallo no debe impedir el inicio de CoreVigil.
+                System.Diagnostics.Debug.WriteLine(
+                    $"No fue posible limpiar los logs de CoreVigil: {ex}");
+            }
         }
 
         public string LogPath =>
@@ -70,6 +144,7 @@ namespace CoreVigil.Diagnostics
                 await writer.WriteLineAsync(
                     "Timestamp," +
                     "ApplicationUptimeSeconds," +
+                    "SampleIntervalMilliseconds," +
                     "SystemCpuPercent," +
                     "CpuFrequencyMhz," +
                     "SystemMemoryPercent," +
@@ -89,6 +164,8 @@ namespace CoreVigil.Diagnostics
                         FormatDateTime(sample.Timestamp),
                         FormatDouble(
                             sample.ApplicationUptime.TotalSeconds),
+                        FormatDouble(
+                            sample.SampleIntervalMilliseconds),
                         FormatDouble(
                             sample.SystemCpuPercent),
                         FormatDouble(

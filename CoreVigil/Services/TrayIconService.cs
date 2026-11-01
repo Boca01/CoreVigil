@@ -65,9 +65,17 @@ namespace CoreVigil.Services
 
             var startupItem =
                  new ToolStripMenuItem("Iniciar con Windows")
-    {
-        CheckOnClick = false
-    };
+                {
+                    CheckOnClick = false
+                };
+                        var diagnosticsItem =
+                new ToolStripMenuItem("Diagnóstico interno")
+                {
+                    CheckOnClick = false
+                };
+
+            var openLogsItem =
+                new ToolStripMenuItem("Abrir carpeta de logs");
 
             var exitItem =
                 new ToolStripMenuItem("Salir");
@@ -79,6 +87,15 @@ namespace CoreVigil.Services
 
             startupItem.Click +=
                 (_, _) => StartupToggleRequested?.Invoke(
+                    this,
+                    EventArgs.Empty);
+            diagnosticsItem.Click +=
+                (_, _) => DiagnosticsToggleRequested?.Invoke(
+                    this,
+                    EventArgs.Empty);
+
+            openLogsItem.Click +=
+                (_, _) => OpenLogsRequested?.Invoke(
                     this,
                     EventArgs.Empty);
 
@@ -93,6 +110,10 @@ namespace CoreVigil.Services
                 new ToolStripSeparator());
 
             _contextMenu.Items.Add(startupItem);
+
+            _contextMenu.Items.Add(diagnosticsItem);
+
+            _contextMenu.Items.Add(openLogsItem);
 
             _contextMenu.Items.Add(
                 new ToolStripSeparator());
@@ -116,11 +137,11 @@ namespace CoreVigil.Services
 
 
         public event EventHandler? ShowRequested;
-
         public event EventHandler? ExitRequested;
         public event EventHandler? StartupToggleRequested;
+        public event EventHandler? DiagnosticsToggleRequested;
+        public event EventHandler? OpenLogsRequested;
         public CpuTrayState CurrentState => _cpuState;
-
         public void SetStartupEnabled(
         bool enabled)
         {
@@ -128,6 +149,20 @@ namespace CoreVigil.Services
             {
                 if (item is ToolStripMenuItem menuItem &&
                     menuItem.Text == "Iniciar con Windows")
+                {
+                    menuItem.Checked = enabled;
+                    return;
+                }
+            }
+        }
+
+        public void SetDiagnosticsEnabled(
+    bool enabled)
+        {
+            foreach (ToolStripItem item in _contextMenu.Items)
+            {
+                if (item is ToolStripMenuItem menuItem &&
+                    menuItem.Text == "Diagnóstico interno")
                 {
                     menuItem.Checked = enabled;
                     return;

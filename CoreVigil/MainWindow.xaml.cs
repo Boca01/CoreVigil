@@ -5,6 +5,8 @@ using System.Windows.Input;
 using CoreVigil.Services;
 using System.ComponentModel;
 using CoreVigil.Diagnostics;
+using System.Diagnostics;
+using System.IO;
 
 namespace CoreVigil
 {
@@ -18,17 +20,21 @@ namespace CoreVigil
         private readonly CancellationTokenSource _monitoringCancellation;
         private readonly HudSettingsService _hudSettingsService;
         private readonly TrayIconService _trayIconService;
-        private readonly StartupService _startupService;
         private bool _isExitRequested;
 
-        private readonly RuntimeDiagnosticsService
-    _runtimeDiagnosticsService;
+        private readonly DiagnosticsSettingsService
+            _diagnosticsSettingsService;
 
-        private readonly RuntimeLogWriter
+        private RuntimeDiagnosticsService?
+            _runtimeDiagnosticsService;
+
+        private RuntimeLogWriter?
             _runtimeLogWriter;
 
-        private readonly CancellationTokenSource
+        private CancellationTokenSource?
             _diagnosticsCancellation;
+        private readonly StartupService _startupService;
+        private readonly HudLayoutService _hudLayoutService;
 
         private Task? _diagnosticsTask;
 
@@ -41,20 +47,22 @@ namespace CoreVigil
             _hudSettingsService = new HudSettingsService();
             _trayIconService = new TrayIconService();
             _startupService = new StartupService();
-            _runtimeDiagnosticsService =
-    new RuntimeDiagnosticsService();
-
-            _runtimeLogWriter =
-                new RuntimeLogWriter();
-
-            _diagnosticsCancellation =
-                new CancellationTokenSource();
+            _hudLayoutService = new HudLayoutService();
+            _diagnosticsSettingsService =
+                new DiagnosticsSettingsService();
             _trayIconService.ShowRequested += OnTrayShowRequested;
             _trayIconService.StartupToggleRequested +=
                 OnStartupToggleRequested;
-
+            _trayIconService.DiagnosticsToggleRequested +=
+                OnDiagnosticsToggleRequested;
+            _trayIconService.OpenLogsRequested +=
+                 OnOpenLogsRequested;
+            // _trayIconService.OpenLogsRequested +=
+            //     OnOpenLogsRequested;
             _trayIconService.SetStartupEnabled(
             _startupService.IsEnabled());
+            _trayIconService.SetDiagnosticsEnabled(
+            _diagnosticsSettingsService.IsEnabled());
             _trayIconService.ExitRequested += OnTrayExitRequested;
 
             var systemUptimeProvider =
@@ -84,8 +92,10 @@ namespace CoreVigil
 
             DataContext = _viewModel;
 
-            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            _viewModel.PropertyChanged +=
+                OnViewModelPropertyChanged;
 
+            ApplyHudLayout();
             RestoreHudSettings();
 
             Loaded += OnWindowLoaded;
@@ -107,17 +117,23 @@ namespace CoreVigil
             object sender,
             RoutedEventArgs e)
         {
-            _diagnosticsTask =
-                RunDiagnosticsAsync(
-                    _diagnosticsCancellation.Token);
+            if (_diagnosticsSettingsService.IsEnabled())
+            {
+                StartDiagnostics();
+            }
 
             await _viewModel.StartMonitoringAsync(
                 _monitoringCancellation.Token);
         }
-
-        private async Task RunDiagnosticsAsync(
-    CancellationToken cancellationToken)
+            private async Task RunDiagnosticsAsync(
+             CancellationToken cancellationToken)
         {
+            if (_runtimeDiagnosticsService is null ||
+                _runtimeLogWriter is null)
+            {
+                return;
+            }
+
             DateTime nextFlushUtc =
                 DateTime.UtcNow.AddSeconds(30);
 
@@ -158,6 +174,62 @@ namespace CoreVigil
             }
         }
 
+        private void StartDiagnostics()
+        {
+            if (_diagnosticsTask is
+                { IsCompleted: false })
+            {
+                return;
+            }
+
+            _runtimeDiagnosticsService =
+                new RuntimeDiagnosticsService();
+
+            _runtimeLogWriter =
+                new RuntimeLogWriter();
+
+            _diagnosticsCancellation =
+                new CancellationTokenSource();
+
+            _diagnosticsTask =
+                RunDiagnosticsAsync(
+                    _diagnosticsCancellation.Token);
+        }
+
+        private async Task StopDiagnosticsAsync()
+        {
+            if (_diagnosticsCancellation is null)
+            {
+                return;
+            }
+
+            _diagnosticsCancellation.Cancel();
+
+            if (_diagnosticsTask is not null)
+            {
+                try
+                {
+                    await _diagnosticsTask;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
+
+            if (_runtimeLogWriter is not null)
+            {
+                await _runtimeLogWriter.FlushAsync();
+            }
+
+            _runtimeDiagnosticsService?.Dispose();
+            _diagnosticsCancellation.Dispose();
+
+            _runtimeDiagnosticsService = null;
+            _runtimeLogWriter = null;
+            _diagnosticsCancellation = null;
+            _diagnosticsTask = null;
+        }
+
         private void OnViewModelPropertyChanged(
             object? sender,
             PropertyChangedEventArgs e)
@@ -170,6 +242,35 @@ namespace CoreVigil
 
             _trayIconService.UpdateCpuUsage(
                 _viewModel.CpuUsagePercent);
+        }
+
+        private void ApplyHudLayout()
+        {
+            HudLayoutProfile profile =
+                _hudLayoutService.GetProfile(this);
+
+            Width =
+                profile.WindowWidth;
+
+            Height =
+                profile.WindowHeight;
+
+            HudRoot.Margin =
+                new Thickness(
+                    profile.OuterMargin);
+
+            HudPanel.Width =
+                profile.ContentWidth;
+
+            HudPanel.Height =
+                profile.ContentHeight;
+
+            HudPanel.Padding =
+                new Thickness(
+                    profile.PanelPadding);
+
+            Tag =
+                profile.Mode;
         }
 
         private void RestoreHudSettings()
@@ -286,20 +387,7 @@ namespace CoreVigil
             await Dispatcher.InvokeAsync(
                 async () =>
                 {
-                    _diagnosticsCancellation.Cancel();
-
-                    if (_diagnosticsTask is not null)
-                    {
-                        try
-                        {
-                            await _diagnosticsTask;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                        }
-                    }
-
-                    await _runtimeLogWriter.FlushAsync();
+                    await StopDiagnosticsAsync();
 
                     _isExitRequested = true;
 
@@ -336,16 +424,68 @@ namespace CoreVigil
                 Topmost);
         }
 
+        private async void OnDiagnosticsToggleRequested(
+    object? sender,
+    EventArgs e)
+        {
+            bool enabled =
+                !_diagnosticsSettingsService.IsEnabled();
+
+            if (enabled)
+            {
+                _diagnosticsSettingsService.SetEnabled(
+                    true);
+
+                _trayIconService.SetDiagnosticsEnabled(
+                    true);
+
+                StartDiagnostics();
+            }
+            else
+            {
+                await StopDiagnosticsAsync();
+
+                _diagnosticsSettingsService.SetEnabled(
+                    false);
+
+                _trayIconService.SetDiagnosticsEnabled(
+                    false);
+            }
+        }
+
+        private void OnOpenLogsRequested(
+    object? sender,
+    EventArgs e)
+        {
+            string logsDirectory =
+                Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.LocalApplicationData),
+                    "CoreVigil",
+                    "Logs");
+
+            Directory.CreateDirectory(
+                logsDirectory);
+
+            Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = logsDirectory,
+                    UseShellExecute = true
+                });
+        }
+
         private void OnWindowClosed(
             object? sender,
             EventArgs e)
         {
             _monitoringCancellation.Cancel();
-            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+
+            _viewModel.PropertyChanged -=
+                OnViewModelPropertyChanged;
+
             _cpuFrequencyMonitor.Dispose();
             _trayIconService.Dispose();
-            _runtimeDiagnosticsService.Dispose();
-            _diagnosticsCancellation.Dispose();
             _monitoringCancellation.Dispose();
         }
     }
