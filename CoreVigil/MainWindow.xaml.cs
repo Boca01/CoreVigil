@@ -4,6 +4,7 @@ using CoreVigil.ViewModels;
 using System.Windows.Input;
 using CoreVigil.Services;
 using System.ComponentModel;
+using CoreVigil.Diagnostics;
 
 namespace CoreVigil
 {
@@ -17,7 +18,19 @@ namespace CoreVigil
         private readonly CancellationTokenSource _monitoringCancellation;
         private readonly HudSettingsService _hudSettingsService;
         private readonly TrayIconService _trayIconService;
+        private readonly StartupService _startupService;
         private bool _isExitRequested;
+
+        private readonly RuntimeDiagnosticsService
+    _runtimeDiagnosticsService;
+
+        private readonly RuntimeLogWriter
+            _runtimeLogWriter;
+
+        private readonly CancellationTokenSource
+            _diagnosticsCancellation;
+
+        private Task? _diagnosticsTask;
 
         public MainWindow()
         {
@@ -27,8 +40,21 @@ namespace CoreVigil
 
             _hudSettingsService = new HudSettingsService();
             _trayIconService = new TrayIconService();
-            _trayIconService.ShowRequested += OnTrayShowRequested;
+            _startupService = new StartupService();
+            _runtimeDiagnosticsService =
+    new RuntimeDiagnosticsService();
 
+            _runtimeLogWriter =
+                new RuntimeLogWriter();
+
+            _diagnosticsCancellation =
+                new CancellationTokenSource();
+            _trayIconService.ShowRequested += OnTrayShowRequested;
+            _trayIconService.StartupToggleRequested +=
+                OnStartupToggleRequested;
+
+            _trayIconService.SetStartupEnabled(
+            _startupService.IsEnabled());
             _trayIconService.ExitRequested += OnTrayExitRequested;
 
             var systemUptimeProvider =
@@ -81,8 +107,55 @@ namespace CoreVigil
             object sender,
             RoutedEventArgs e)
         {
+            _diagnosticsTask =
+                RunDiagnosticsAsync(
+                    _diagnosticsCancellation.Token);
+
             await _viewModel.StartMonitoringAsync(
                 _monitoringCancellation.Token);
+        }
+
+        private async Task RunDiagnosticsAsync(
+    CancellationToken cancellationToken)
+        {
+            DateTime nextFlushUtc =
+                DateTime.UtcNow.AddSeconds(30);
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    RuntimeSample sample =
+                        _runtimeDiagnosticsService.Capture(
+                            _viewModel.ApplicationElapsed,
+                            _viewModel.CpuUsagePercent,
+                            _viewModel.CpuFrequencyMhz,
+                            _viewModel.MemorySnapshot?.UsagePercent
+                                ?? 0.0,
+                            IsVisible &&
+                                WindowState != WindowState.Minimized,
+                            Topmost,
+                            _trayIconService.CurrentState.ToString());
+
+                    _runtimeLogWriter.Add(sample);
+
+                    if (DateTime.UtcNow >= nextFlushUtc)
+                    {
+                        await _runtimeLogWriter.FlushAsync();
+
+                        nextFlushUtc =
+                            DateTime.UtcNow.AddSeconds(30);
+                    }
+
+                    await Task.Delay(
+                        TimeSpan.FromSeconds(1),
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
         }
 
         private void OnViewModelPropertyChanged(
@@ -206,15 +279,45 @@ namespace CoreVigil
             });
         }
 
-        private void OnTrayExitRequested(
-                object? sender,
-                EventArgs e)
+        private async void OnTrayExitRequested(
+            object? sender,
+            EventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                _isExitRequested = true;
-                Close();
-            });
+            await Dispatcher.InvokeAsync(
+                async () =>
+                {
+                    _diagnosticsCancellation.Cancel();
+
+                    if (_diagnosticsTask is not null)
+                    {
+                        try
+                        {
+                            await _diagnosticsTask;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                        }
+                    }
+
+                    await _runtimeLogWriter.FlushAsync();
+
+                    _isExitRequested = true;
+
+                    Close();
+                });
+        }
+
+        private void OnStartupToggleRequested(
+    object? sender,
+    EventArgs e)
+        {
+            bool enabled =
+                !_startupService.IsEnabled();
+
+            _startupService.SetEnabled(enabled);
+
+            _trayIconService.SetStartupEnabled(
+                enabled);
         }
         private void OnWindowClosing(
             object? sender,
@@ -241,6 +344,8 @@ namespace CoreVigil
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _cpuFrequencyMonitor.Dispose();
             _trayIconService.Dispose();
+            _runtimeDiagnosticsService.Dispose();
+            _diagnosticsCancellation.Dispose();
             _monitoringCancellation.Dispose();
         }
     }

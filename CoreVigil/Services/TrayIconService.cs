@@ -63,11 +63,22 @@ namespace CoreVigil.Services
             var showItem =
                 new ToolStripMenuItem("Mostrar CoreVigil");
 
+            var startupItem =
+                 new ToolStripMenuItem("Iniciar con Windows")
+    {
+        CheckOnClick = false
+    };
+
             var exitItem =
                 new ToolStripMenuItem("Salir");
 
             showItem.Click +=
                 (_, _) => ShowRequested?.Invoke(
+                    this,
+                    EventArgs.Empty);
+
+            startupItem.Click +=
+                (_, _) => StartupToggleRequested?.Invoke(
                     this,
                     EventArgs.Empty);
 
@@ -77,8 +88,15 @@ namespace CoreVigil.Services
                     EventArgs.Empty);
 
             _contextMenu.Items.Add(showItem);
+
             _contextMenu.Items.Add(
                 new ToolStripSeparator());
+
+            _contextMenu.Items.Add(startupItem);
+
+            _contextMenu.Items.Add(
+                new ToolStripSeparator());
+
             _contextMenu.Items.Add(exitItem);
 
             _notifyIcon =
@@ -100,6 +118,22 @@ namespace CoreVigil.Services
         public event EventHandler? ShowRequested;
 
         public event EventHandler? ExitRequested;
+        public event EventHandler? StartupToggleRequested;
+        public CpuTrayState CurrentState => _cpuState;
+
+        public void SetStartupEnabled(
+        bool enabled)
+        {
+            foreach (ToolStripItem item in _contextMenu.Items)
+            {
+                if (item is ToolStripMenuItem menuItem &&
+                    menuItem.Text == "Iniciar con Windows")
+                {
+                    menuItem.Checked = enabled;
+                    return;
+                }
+            }
+        }
 
         public void UpdateCpuUsage(
             double usagePercent)
