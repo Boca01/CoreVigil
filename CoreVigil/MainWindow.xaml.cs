@@ -17,6 +17,7 @@ namespace CoreVigil
         private readonly CancellationTokenSource _monitoringCancellation;
         private readonly HudSettingsService _hudSettingsService;
         private readonly TrayIconService _trayIconService;
+        private bool _isExitRequested;
 
         public MainWindow()
         {
@@ -26,6 +27,9 @@ namespace CoreVigil
 
             _hudSettingsService = new HudSettingsService();
             _trayIconService = new TrayIconService();
+            _trayIconService.ShowRequested += OnTrayShowRequested;
+
+            _trayIconService.ExitRequested += OnTrayExitRequested;
 
             var systemUptimeProvider =
                 new SystemUptimeProvider();
@@ -167,12 +171,46 @@ namespace CoreVigil
             object sender,
             RoutedEventArgs e)
         {
-            Close();
+            Hide();
+        }
+        private void OnTrayShowRequested(
+    object? sender,
+    EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Show();
+
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+
+                Activate();
+            });
+        }
+
+        private void OnTrayExitRequested(
+                object? sender,
+                EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _isExitRequested = true;
+                Close();
+            });
         }
         private void OnWindowClosing(
-    object? sender,
-    CancelEventArgs e)
+            object? sender,
+            CancelEventArgs e)
         {
+            if (!_isExitRequested)
+            {
+                e.Cancel = true;
+                Hide();
+                return;
+            }
+
             _hudSettingsService.Save(
                 Left,
                 Top,
