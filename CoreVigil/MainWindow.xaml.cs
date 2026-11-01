@@ -16,6 +16,7 @@ namespace CoreVigil
         private readonly CpuFrequencyMonitor _cpuFrequencyMonitor;
         private readonly CancellationTokenSource _monitoringCancellation;
         private readonly HudSettingsService _hudSettingsService;
+        private readonly TrayIconService _trayIconService;
 
         public MainWindow()
         {
@@ -24,6 +25,7 @@ namespace CoreVigil
             var cpuMonitor = new CpuMonitor();
 
             _hudSettingsService = new HudSettingsService();
+            _trayIconService = new TrayIconService();
 
             var systemUptimeProvider =
                 new SystemUptimeProvider();
@@ -183,6 +185,7 @@ namespace CoreVigil
         {
             _monitoringCancellation.Cancel();
             _cpuFrequencyMonitor.Dispose();
+            _trayIconService.Dispose();
             _monitoringCancellation.Dispose();
         }
     }
