@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
+using System.IO;
 
 namespace CoreVigil.Services
 {
@@ -12,8 +13,51 @@ namespace CoreVigil.Services
         private readonly NotifyIcon _notifyIcon;
         private readonly ContextMenuStrip _contextMenu;
         private CpuTrayState _cpuState = CpuTrayState.Unknown;
+        private readonly Icon _lowIcon;
+        private readonly Icon _mediumIcon;
+        private readonly Icon _highIcon;
+        private readonly Icon _criticalIcon;
         public TrayIconService()
         {
+            string basePath =
+    AppContext.BaseDirectory;
+
+            _lowIcon =
+                new Icon(
+                    Path.Combine(
+                        basePath,
+                        "Assets",
+                        "Icons",
+                        "Tray",
+                        "CoreVigil_Low.ico"));
+
+            _mediumIcon =
+                new Icon(
+                    Path.Combine(
+                        basePath,
+                        "Assets",
+                        "Icons",
+                        "Tray",
+                        "CoreVigil_Medium.ico"));
+
+            _highIcon =
+                new Icon(
+                    Path.Combine(
+                        basePath,
+                        "Assets",
+                        "Icons",
+                        "Tray",
+                        "CoreVigil_High.ico"));
+
+            _criticalIcon =
+                new Icon(
+                    Path.Combine(
+                        basePath,
+                        "Assets",
+                        "Icons",
+                        "Tray",
+                        "CoreVigil_Critical.ico"));
+
             _contextMenu = new ContextMenuStrip();
 
             var showItem =
@@ -41,7 +85,7 @@ namespace CoreVigil.Services
                 new NotifyIcon
                 {
                     Text = "CoreVigil",
-                    Icon = SystemIcons.Application,
+                    Icon = _lowIcon,
                     ContextMenuStrip = _contextMenu,
                     Visible = true
                 };
@@ -80,19 +124,19 @@ namespace CoreVigil.Services
                 newState switch
                 {
                     CpuTrayState.Low =>
-                        SystemIcons.Information,
+                        _lowIcon,
 
                     CpuTrayState.Medium =>
-                        SystemIcons.Application,
+                        _mediumIcon,
 
                     CpuTrayState.High =>
-                        SystemIcons.Warning,
+                        _highIcon,
 
                     CpuTrayState.Critical =>
-                        SystemIcons.Error,
+                        _criticalIcon,
 
                     _ =>
-                        SystemIcons.Application
+                        _lowIcon
                 };
 
             _notifyIcon.Text =
@@ -104,6 +148,10 @@ namespace CoreVigil.Services
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
             _contextMenu.Dispose();
+            _lowIcon.Dispose();
+            _mediumIcon.Dispose();
+            _highIcon.Dispose();
+            _criticalIcon.Dispose();
         }
     }
 
