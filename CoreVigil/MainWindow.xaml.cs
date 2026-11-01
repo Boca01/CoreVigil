@@ -15,7 +15,7 @@ namespace CoreVigil
         private readonly MainViewModel _viewModel;
         private readonly CpuFrequencyMonitor _cpuFrequencyMonitor;
         private readonly CancellationTokenSource _monitoringCancellation;
-        private readonly HudPositionService _hudPositionService;
+        private readonly HudSettingsService _hudSettingsService;
 
         public MainWindow()
         {
@@ -23,7 +23,7 @@ namespace CoreVigil
 
             var cpuMonitor = new CpuMonitor();
 
-            _hudPositionService = new HudPositionService();
+            _hudSettingsService = new HudSettingsService();
 
             var systemUptimeProvider =
                 new SystemUptimeProvider();
@@ -52,7 +52,7 @@ namespace CoreVigil
 
             DataContext = _viewModel;
 
-            RestoreHudPosition();
+            RestoreHudSettings();
 
             Loaded += OnWindowLoaded;
             Closing += OnWindowClosing;
@@ -60,7 +60,15 @@ namespace CoreVigil
             MouseLeftButtonDown += OnWindowMouseLeftButtonDown;
         }
 
-
+        private void OnWindowMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
         private async void OnWindowLoaded(
             object sender,
             RoutedEventArgs e)
@@ -69,12 +77,12 @@ namespace CoreVigil
                 _monitoringCancellation.Token);
         }
 
-        private void RestoreHudPosition()
+        private void RestoreHudSettings()
         {
-            HudPosition? position =
-                _hudPositionService.Load();
+            HudSettings? settings =
+                _hudSettingsService.Load();
 
-            if (position is null)
+            if (settings is null)
             {
                 return;
             }
@@ -91,27 +99,36 @@ namespace CoreVigil
 
             Left =
                 Math.Clamp(
-                    position.Left,
+                    settings.Left,
                     SystemParameters.VirtualScreenLeft,
                     maxLeft);
 
             Top =
                 Math.Clamp(
-                    position.Top,
+                    settings.Top,
                     SystemParameters.VirtualScreenTop,
                     maxTop);
-        }
 
-        private void OnWindowMouseLeftButtonDown(
-            object sender,
-            MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-            {
-                DragMove();
-            }
-        }
+            Topmost = settings.Topmost;
 
+            TopmostButton.Content =
+                Topmost
+                    ? "●"
+                    : "○";
+
+            TopmostButton.Foreground =
+                Topmost
+                    ? new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(
+                            111,
+                            168,
+                            255))
+                    : new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(
+                            127,
+                            137,
+                            153));
+        }
         private void OnTopmostButtonClick(
     object sender,
     RoutedEventArgs e)
@@ -154,9 +171,10 @@ namespace CoreVigil
     object? sender,
     CancelEventArgs e)
         {
-            _hudPositionService.Save(
+            _hudSettingsService.Save(
                 Left,
-                Top);
+                Top,
+                Topmost);
         }
 
         private void OnWindowClosed(

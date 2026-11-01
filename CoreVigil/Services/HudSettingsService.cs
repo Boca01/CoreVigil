@@ -4,13 +4,13 @@ using System.Text.Json;
 namespace CoreVigil.Services
 {
     /// <summary>
-    /// Guarda y recupera la última posición conocida del HUD.
+    /// Guarda y recupera las preferencias locales del HUD.
     /// </summary>
-    public sealed class HudPositionService
+    public sealed class HudSettingsService
     {
         private readonly string _settingsPath;
 
-        public HudPositionService()
+        public HudSettingsService()
         {
             string directory =
                 Path.Combine(
@@ -23,10 +23,10 @@ namespace CoreVigil.Services
             _settingsPath =
                 Path.Combine(
                     directory,
-                    "hud-position.json");
+                    "hud-settings.json");
         }
 
-        public HudPosition? Load()
+        public HudSettings? Load()
         {
             try
             {
@@ -38,7 +38,7 @@ namespace CoreVigil.Services
                 string json =
                     File.ReadAllText(_settingsPath);
 
-                return JsonSerializer.Deserialize<HudPosition>(json);
+                return JsonSerializer.Deserialize<HudSettings>(json);
             }
             catch
             {
@@ -48,19 +48,21 @@ namespace CoreVigil.Services
 
         public void Save(
             double left,
-            double top)
+            double top,
+            bool topmost)
         {
             try
             {
-                var position =
-                    new HudPosition
+                var settings =
+                    new HudSettings
                     {
                         Left = left,
-                        Top = top
+                        Top = top,
+                        Topmost = topmost
                     };
 
                 string json =
-                    JsonSerializer.Serialize(position);
+                    JsonSerializer.Serialize(settings);
 
                 File.WriteAllText(
                     _settingsPath,
@@ -68,19 +70,20 @@ namespace CoreVigil.Services
             }
             catch (Exception ex)
             {
-                // La posición del HUD es una preferencia secundaria.
-                // Un fallo al guardarla no debe detener CoreVigil.
-
+                // Las preferencias del HUD son secundarias.
+                // Un fallo al guardarlas no debe detener CoreVigil.
                 System.Diagnostics.Debug.WriteLine(
-                    $"No fue posible guardar la posición del HUD: {ex}");
+                    $"No fue posible guardar las preferencias del HUD: {ex}");
             }
         }
     }
 
-    public sealed class HudPosition
+    public sealed class HudSettings
     {
         public double Left { get; init; }
 
         public double Top { get; init; }
+
+        public bool Topmost { get; init; }
     }
 }
