@@ -30,26 +30,38 @@
                     <StackPanel HorizontalAlignment="Right"
                 Orientation="Horizontal">
 
-                        <Button Width="28"
-                Height="24"
-                Margin="0,0,4,0"
-                Background="Transparent"
-                BorderThickness="0"
-                Foreground="#7F8999"
-                FontSize="16"
-                Content="−"
-                ToolTip="Minimizar"
-                Click="OnMinimizeButtonClick" />
+                        <Button x:Name="TopmostButton"
+                            Width="28"
+                            Height="24"
+                            Margin="0,0,4,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#7F8999"
+                            FontSize="15"
+                            Content="○"
+                            ToolTip="Mantener siempre visible"
+                            Click="OnTopmostButtonClick" />
 
                         <Button Width="28"
-                Height="24"
-                Background="Transparent"
-                BorderThickness="0"
-                Foreground="#7F8999"
-                FontSize="16"
-                Content="×"
-                ToolTip="Cerrar"
-                Click="OnCloseButtonClick" />
+                            Height="24"
+                            Margin="0,0,4,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#7F8999"
+                            FontSize="16"
+                            Content="−"
+                            ToolTip="Minimizar"
+                            Click="OnMinimizeButtonClick" />
+
+                        <Button Width="28"
+                            Height="24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#7F8999"
+                            FontSize="16"
+                            Content="×"
+                            ToolTip="Cerrar"
+                            Click="OnCloseButtonClick" />
 
                     </StackPanel>
 

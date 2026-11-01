@@ -112,6 +112,31 @@ namespace CoreVigil
             }
         }
 
+        private void OnTopmostButtonClick(
+    object sender,
+    RoutedEventArgs e)
+        {
+            Topmost = !Topmost;
+
+            TopmostButton.Content =
+                Topmost
+                    ? "●"
+                    : "○";
+
+            TopmostButton.Foreground =
+                Topmost
+                    ? new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(
+                            111,
+                            168,
+                            255))
+                    : new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(
+                            127,
+                            137,
+                            153));
+        }
+
         private void OnMinimizeButtonClick(
             object sender,
             RoutedEventArgs e)
