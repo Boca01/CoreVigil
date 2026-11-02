@@ -282,7 +282,7 @@ namespace CoreVigil.ViewModels
                     {
                         TopProcesses =
                             await _processMonitor.GetTopProcessesAsync(
-                                3,
+                                8,
                                 cancellationToken);
 
                         _nextProcessRefreshUtc =
