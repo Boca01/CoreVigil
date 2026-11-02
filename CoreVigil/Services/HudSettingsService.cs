@@ -12,18 +12,16 @@ namespace CoreVigil.Services
 
         public HudSettingsService()
         {
-            string directory =
-                Path.Combine(
-                    Environment.GetFolderPath(
-                        Environment.SpecialFolder.LocalApplicationData),
-                    "CoreVigil");
+            string directory = Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData),
+                "CoreVigil");
 
             Directory.CreateDirectory(directory);
 
-            _settingsPath =
-                Path.Combine(
-                    directory,
-                    "hud-settings.json");
+            _settingsPath = Path.Combine(
+                directory,
+                "hud-settings.json");
         }
 
         public HudSettings? Load()
@@ -35,9 +33,7 @@ namespace CoreVigil.Services
                     return null;
                 }
 
-                string json =
-                    File.ReadAllText(_settingsPath);
-
+                string json = File.ReadAllText(_settingsPath);
                 return JsonSerializer.Deserialize<HudSettings>(json);
             }
             catch
@@ -51,19 +47,33 @@ namespace CoreVigil.Services
             double top,
             bool topmost)
         {
+            bool isCpuActivityExpanded =
+                Load()?.IsCpuActivityExpanded ?? true;
+
+            Save(
+                left,
+                top,
+                topmost,
+                isCpuActivityExpanded);
+        }
+
+        public void Save(
+            double left,
+            double top,
+            bool topmost,
+            bool isCpuActivityExpanded)
+        {
             try
             {
-                var settings =
-                    new HudSettings
-                    {
-                        Left = left,
-                        Top = top,
-                        Topmost = topmost
-                    };
+                var settings = new HudSettings
+                {
+                    Left = left,
+                    Top = top,
+                    Topmost = topmost,
+                    IsCpuActivityExpanded = isCpuActivityExpanded
+                };
 
-                string json =
-                    JsonSerializer.Serialize(settings);
-
+                string json = JsonSerializer.Serialize(settings);
                 File.WriteAllText(
                     _settingsPath,
                     json);
@@ -81,9 +91,8 @@ namespace CoreVigil.Services
     public sealed class HudSettings
     {
         public double Left { get; init; }
-
         public double Top { get; init; }
-
         public bool Topmost { get; init; }
+        public bool IsCpuActivityExpanded { get; init; } = true;
     }
 }

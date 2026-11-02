@@ -4,7 +4,10 @@
         Title="CoreVigil" Width="410" Height="445"
         WindowStartupLocation="Manual" WindowStyle="None"
         AllowsTransparency="True" Background="Transparent"
-        ResizeMode="NoResize" UseLayoutRounding="True" SnapsToDevicePixels="True">
+        ResizeMode="NoResize" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Loaded="OnPersistedStateLoaded"
+        LocationChanged="OnPersistedLocationChanged"
+        IsVisibleChanged="OnPersistedVisibilityChanged">
 
     <Window.Resources>
         <!-- Barra de telemetria personalizada de CoreVigil. -->

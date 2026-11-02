@@ -41,6 +41,9 @@ namespace CoreVigil
             {
                 Top -= targetHeight - previousHeight;
             }
+
+            KeepHudInsideWorkArea();
+            SavePersistedHudState();
         }
 
         private void OnCpuActivityCollapsed(
@@ -74,6 +77,27 @@ namespace CoreVigil
 
             // Mantiene fijo el borde inferior: el HUD se recoge hacia abajo.
             Top += previousHeight - targetHeight;
+
+            KeepHudInsideWorkArea();
+            SavePersistedHudState();
+        }
+
+        private void KeepHudInsideWorkArea()
+        {
+            Rect workArea = SystemParameters.WorkArea;
+
+            double maxLeft = workArea.Right - Width;
+            double maxTop = workArea.Bottom - Height;
+
+            Left = Math.Clamp(
+                Left,
+                workArea.Left,
+                maxLeft);
+
+            Top = Math.Clamp(
+                Top,
+                workArea.Top,
+                maxTop);
         }
     }
 }
