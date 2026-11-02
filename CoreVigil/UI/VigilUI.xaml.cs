@@ -96,7 +96,6 @@ namespace CoreVigil.UI
                 OnViewModelPropertyChanged;
 
             ApplyHudLayout();
-            RestoreHudSettings();
 
             Loaded += OnWindowLoaded;
             Closing += OnWindowClosing;

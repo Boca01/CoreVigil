@@ -5,6 +5,7 @@ namespace CoreVigil.UI
 {
     /// <summary>
     /// Persiste la geometria visible y el estado expandido del HUD.
+    /// Los cambios internos de layout no se interpretan como movimientos del usuario.
     /// </summary>
     public partial class VigilUI
     {
@@ -21,19 +22,16 @@ namespace CoreVigil.UI
             object? sender,
             EventArgs e)
         {
-            if (_isRestoringPersistedHudState || !IsLoaded)
-            {
-                return;
-            }
-
-            SavePersistedHudState();
+            // No guardar aqui.
+            // LocationChanged tambien se dispara cuando el propio HUD cambia
+            // Top durante expandir/contraer, lo que contaminaba la posicion.
         }
 
         private void OnPersistedVisibilityChanged(
             object sender,
             DependencyPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if (_isRestoringPersistedHudState || (bool)e.NewValue)
             {
                 return;
             }

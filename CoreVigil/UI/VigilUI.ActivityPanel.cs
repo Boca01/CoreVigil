@@ -1,86 +1,107 @@
 using System.Windows;
+using System.Windows.Threading;
 using CoreVigil.Services;
 
 namespace CoreVigil.UI
 {
     /// <summary>
-    /// Ajusta el tamano del HUD conservando exactamente
-    /// la posicion de su borde inferior.
+    /// Ajusta el tamano del HUD conservando el borde inferior
+    /// sin persistir posiciones intermedias del layout.
     /// </summary>
     public partial class VigilUI
     {
         private const double CollapsedContentHeight = 350.0;
+        private bool _isChangingCpuActivityLayout;
 
-        private void OnCpuActivityExpanded(
+        private async void OnCpuActivityExpanded(
             object sender,
             RoutedEventArgs e)
         {
-            if (!IsLoaded || _isRestoringPersistedHudState)
-            {
-                return;
-            }
-
-            ApplyCpuActivityLayout(
+            await ApplyCpuActivityLayoutAsync(
                 isExpanded: true);
         }
 
-        private void OnCpuActivityCollapsed(
+        private async void OnCpuActivityCollapsed(
             object sender,
             RoutedEventArgs e)
         {
-            if (!IsLoaded || _isRestoringPersistedHudState)
+            await ApplyCpuActivityLayoutAsync(
+                isExpanded: false);
+        }
+
+        private async Task ApplyCpuActivityLayoutAsync(
+            bool isExpanded)
+        {
+            if (!IsLoaded ||
+                _isRestoringPersistedHudState ||
+                _isChangingCpuActivityLayout)
             {
                 return;
             }
 
-            ApplyCpuActivityLayout(
-                isExpanded: false);
-        }
+            _isChangingCpuActivityLayout = true;
 
-        private void ApplyCpuActivityLayout(
-            bool isExpanded)
-        {
-            HudLayoutProfile profile =
-                _hudLayoutService.GetProfile(this);
-
-            // El borde inferior es la referencia estable.
-            // Evita acumular desplazamientos en ciclos repetidos.
-            double anchoredBottom = Top + Height;
-
-            Width = profile.WindowWidth;
-            HudPanel.Width = profile.ContentWidth;
-
-            if (isExpanded)
+            try
             {
-                Height = profile.WindowHeight;
-                HudPanel.Height = profile.ContentHeight;
+                // Se toma el borde inferior real antes del cambio.
+                double anchoredBottom =
+                    Top + ActualHeight;
+
+                HudLayoutProfile profile =
+                    _hudLayoutService.GetProfile(this);
+
+                Width = profile.WindowWidth;
+                HudPanel.Width = profile.ContentWidth;
+
+                if (isExpanded)
+                {
+                    Height = profile.WindowHeight;
+                    HudPanel.Height = profile.ContentHeight;
+                }
+                else
+                {
+                    double removedContentHeight =
+                        profile.ContentHeight -
+                        CollapsedContentHeight;
+
+                    Height = Math.Max(
+                        320.0,
+                        profile.WindowHeight -
+                        removedContentHeight);
+
+                    HudPanel.Height = CollapsedContentHeight;
+                }
+
+                // Espera a que WPF aplique la nueva geometria antes de anclar.
+                await Dispatcher.InvokeAsync(
+                    () => { },
+                    DispatcherPriority.Loaded);
+
+                Top = anchoredBottom - ActualHeight;
+                KeepHudInsideWorkArea();
+
+                // Espera una segunda pasada para persistir solo el estado final.
+                await Dispatcher.InvokeAsync(
+                    () => { },
+                    DispatcherPriority.Loaded);
+
+                SavePersistedHudState();
             }
-            else
+            finally
             {
-                double removedContentHeight =
-                    profile.ContentHeight -
-                    CollapsedContentHeight;
-
-                Height = Math.Max(
-                    320.0,
-                    profile.WindowHeight -
-                    removedContentHeight);
-
-                HudPanel.Height = CollapsedContentHeight;
+                _isChangingCpuActivityLayout = false;
             }
-
-            Top = anchoredBottom - Height;
-
-            KeepHudInsideWorkArea();
-            SavePersistedHudState();
         }
 
         private void KeepHudInsideWorkArea()
         {
             Rect workArea = SystemParameters.WorkArea;
 
-            double maxLeft = workArea.Right - Width;
-            double maxTop = workArea.Bottom - Height;
+            double maxLeft =
+                workArea.Right - ActualWidth;
+
+            double maxTop =
+                workArea.Bottom - ActualHeight;
 
             Left = Math.Clamp(
                 Left,
