@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using CoreVigil.Monitoring;
 using CoreVigil.ViewModels;
 using System.Windows.Input;
@@ -8,12 +8,12 @@ using CoreVigil.Diagnostics;
 using System.Diagnostics;
 using System.IO;
 
-namespace CoreVigil
+namespace CoreVigil.UI
 {
     /// <summary>
     /// Ventana principal de presentación de CoreVigil.
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class VigilUI : Window
     {
         private readonly MainViewModel _viewModel;
         private readonly CpuFrequencyMonitor _cpuFrequencyMonitor;
@@ -38,7 +38,7 @@ namespace CoreVigil
 
         private Task? _diagnosticsTask;
 
-        public MainWindow()
+        public VigilUI()
         {
             InitializeComponent();
 

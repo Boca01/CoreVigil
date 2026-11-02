@@ -1,12 +1,12 @@
-﻿using System.Windows;
+using System.Windows;
 
-namespace CoreVigil
+namespace CoreVigil.UI
 {
     /// <summary>
     /// Alterna la presentacion de actividad de CPU
     /// entre procesos individuales y grupos por nombre.
     /// </summary>
-    public partial class MainWindow
+    public partial class VigilUI
     {
         private void OnGroupedProcessViewClick(
             object sender,

@@ -1,12 +1,12 @@
-﻿using System.Windows;
+using System.Windows;
 using CoreVigil.Services;
 
-namespace CoreVigil
+namespace CoreVigil.UI
 {
     /// <summary>
     /// Persiste la geometria visible y el estado expandido del HUD.
     /// </summary>
-    public partial class MainWindow
+    public partial class VigilUI
     {
         private bool _isRestoringPersistedHudState;
 
