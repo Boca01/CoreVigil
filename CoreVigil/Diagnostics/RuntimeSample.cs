@@ -24,6 +24,12 @@
 
         public long ManagedHeapBytes { get; init; }
 
+        public long GcHeapSizeBytes { get; init; }
+
+        public long GcIndex { get; init; }
+
+        public bool IsManagedHeapReadingValid { get; init; }
+
         public bool IsHudVisible { get; init; }
 
         public bool IsTopmost { get; init; }

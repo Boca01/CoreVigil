@@ -151,6 +151,9 @@ namespace CoreVigil.Diagnostics
                     "CoreVigilCpuPercent," +
                     "WorkingSetBytes," +
                     "ManagedHeapBytes," +
+                    "GcHeapSizeBytes," +
+                    "GcIndex," +
+                    "IsManagedHeapReadingValid," +
                     "IsHudVisible," +
                     "IsTopmost," +
                     "TrayState");
@@ -174,15 +177,24 @@ namespace CoreVigil.Diagnostics
                             sample.SystemMemoryPercent),
                         FormatDouble(
                             sample.CoreVigilCpuPercent),
-                        sample.WorkingSetBytes
-                            .ToString(
-                                CultureInfo.InvariantCulture),
-                        sample.ManagedHeapBytes
-                            .ToString(
-                                CultureInfo.InvariantCulture),
-                        sample.IsHudVisible
-                            ? "true"
-                            : "false",
+                            sample.WorkingSetBytes
+                                .ToString(
+                                    CultureInfo.InvariantCulture),
+                            sample.ManagedHeapBytes
+                                .ToString(
+                                    CultureInfo.InvariantCulture),
+                            sample.GcHeapSizeBytes
+                                .ToString(
+                                    CultureInfo.InvariantCulture),
+                            sample.GcIndex
+                                .ToString(
+                                    CultureInfo.InvariantCulture),
+                            sample.IsManagedHeapReadingValid
+                                ? "true"
+                                : "false",
+                            sample.IsHudVisible
+                                ? "true"
+                                : "false",
                         sample.IsTopmost
                             ? "true"
                             : "false",

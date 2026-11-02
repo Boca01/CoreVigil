@@ -52,6 +52,17 @@ namespace CoreVigil.Diagnostics
             long managedHeapBytes =
                 GC.GetTotalMemory(
                     forceFullCollection: false);
+               GCMemoryInfo gcMemoryInfo =
+                GC.GetGCMemoryInfo();
+
+            long gcHeapSizeBytes =
+                gcMemoryInfo.HeapSizeBytes;
+
+            long gcIndex =
+                gcMemoryInfo.Index;
+
+            bool isManagedHeapReadingValid =
+                managedHeapBytes >= 0;
 
             return new RuntimeSample
             {
@@ -74,13 +85,23 @@ namespace CoreVigil.Diagnostics
                     coreVigilCpuPercent,
 
                 WorkingSetBytes =
-                    workingSetBytes,
+                     workingSetBytes,
 
                 ManagedHeapBytes =
-                    managedHeapBytes,
+                     managedHeapBytes,
+
+                GcHeapSizeBytes =
+                     gcHeapSizeBytes,
+
+                GcIndex =
+                     gcIndex,
+
+                IsManagedHeapReadingValid =
+                     isManagedHeapReadingValid,
 
                 IsHudVisible =
-                    isHudVisible,
+                     isHudVisible,
+
 
                 IsTopmost =
                     isTopmost,
