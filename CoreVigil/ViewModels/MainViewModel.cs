@@ -275,15 +275,28 @@ namespace CoreVigil.ViewModels
 
                     if (DateTime.UtcNow >= _nextProcessRefreshUtc)
                     {
-                        IReadOnlyList<ProcessSnapshot> processes =
+                        IReadOnlyList<ProcessSnapshot> measuredProcesses =
                             await _processMonitor.GetTopProcessesAsync(
-                                8,
+                                int.MaxValue,
                                 cancellationToken);
 
-                        TopProcesses = processes;
+                        TopProcesses =
+                            measuredProcesses
+                                .OrderByDescending(
+                                    process =>
+                                        process.CpuUsagePercent)
+                                .ThenBy(
+                                    process =>
+                                        process.ProcessId)
+                                .Take(8)
+                                .ToArray();
+
                         ProcessGroups =
-                            _processGroupingService.GroupByName(
-                                processes);
+                            _processGroupingService
+                                .GroupByName(
+                                    measuredProcesses)
+                                .Take(8)
+                                .ToArray();
 
                         _nextProcessRefreshUtc =
                             DateTime.UtcNow.AddSeconds(3);
