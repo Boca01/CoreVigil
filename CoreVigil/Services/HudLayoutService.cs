@@ -71,8 +71,8 @@ namespace CoreVigil.Services
             return new HudLayoutProfile
             {
                 Mode = HudLayoutMode.Standard,
-                WindowWidth = 410.0,
-                WindowHeight = 445.0,
+                WindowWidth = 432.0,
+                WindowHeight = 466.0,
                 ContentWidth = 404.0,
                 ContentHeight = 438.0,
                 OuterMargin = 14.0,

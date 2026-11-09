@@ -44,7 +44,7 @@ namespace CoreVigil.UI
             try
             {
                 double preservedLeft = Left;
-                double preservedTop = Top;
+                double preservedBottom = Top + ActualHeight;
 
                 HudLayoutProfile profile =
                     _hudLayoutService.GetProfile(this);
@@ -77,8 +77,7 @@ namespace CoreVigil.UI
                     DispatcherPriority.Loaded);
 
                 Left = preservedLeft;
-                Top = preservedTop;
-
+                Top = preservedBottom - ActualHeight;
                 KeepHudInsideWorkArea();
 
                 await Dispatcher.InvokeAsync(
