@@ -157,6 +157,16 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button Width="26"
+                            Height="22"
+                            Margin="0,0,3,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#6FA8FF"
+                            FontSize="12"
+                            Content="▭"
+                            ToolTip="Modo Mini"
+                            Click="OnMiniModeButtonClick" />
                     <Button x:Name="TopmostButton" Width="26" Height="22" Margin="0,0,3,0" Background="Transparent" BorderThickness="0" Foreground="#7F8999" FontSize="14" Content="○" ToolTip="Mantener siempre visible" Click="OnTopmostButtonClick" />
                     <Button Width="26" Height="22" Margin="0,0,3,0" Background="Transparent" BorderThickness="0" Foreground="#7F8999" FontSize="15" Content="−" ToolTip="Minimizar" Click="OnMinimizeButtonClick" />
                     <Button Width="26" Height="22" Background="Transparent" BorderThickness="0" Foreground="#7F8999" FontSize="15" Content="×" ToolTip="Ocultar" Click="OnCloseButtonClick" />
@@ -297,6 +307,129 @@
                 </Expander>
                 <TextBlock Grid.Row="8" Text="{Binding StatusText}" Margin="0,9,0,0" Foreground="#617083" FontSize="9" HorizontalAlignment="Center" />
                 <Border Grid.Row="9" Width="42" Height="2" Margin="0,6,0,0" CornerRadius="1" Background="#4C8DFF" Opacity="0.55" HorizontalAlignment="Center" />
+            </Grid>
+        </Border>
+        <!-- Modo Mini de CoreVigil.
+             Reutiliza el mismo DataContext del HUD principal. -->
+        <Border x:Name="MiniHudPanel"
+                Width="230"
+                Height="42"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                CornerRadius="21"
+                BorderThickness="1"
+                BorderBrush="#334C8DFF"
+                Padding="8,0">
+            <Border.Background>
+                <SolidColorBrush Color="#10131A"
+                                 Opacity="0.90" />
+            </Border.Background>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="26" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Indicador CoreVigil -->
+                <Border Grid.Column="0"
+                        Width="20"
+                        Height="20"
+                        CornerRadius="10"
+                        Background="#173B6D"
+                        BorderBrush="#4C8DFF"
+                        BorderThickness="1"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
+
+                    <Ellipse x:Name="MiniStatusLed"
+                             Width="7"
+                             Height="7"
+                             Fill="#4C8DFF"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <Ellipse.Effect>
+                            <DropShadowEffect x:Name="MiniStatusLedGlow"
+                          Color="#4C8DFF"
+                          BlurRadius="8"
+                          ShadowDepth="0"
+                          Opacity="0.85" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                </Border>
+
+                <!-- Telemetria Mini -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="RAM:"
+                               Foreground="#7F8999"
+                               FontSize="11"
+                               VerticalAlignment="Center" />
+
+                    <TextBlock Text="{Binding MemoryUsagePercentText}"
+                               Margin="4,0,10,0"
+                               Foreground="#AEB8C8"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+
+                    <TextBlock Text="CPU:"
+                               Foreground="#7F8999"
+                               FontSize="11"
+                               VerticalAlignment="Center" />
+
+                    <TextBlock Text="{Binding CpuUsageText}"
+                               Margin="4,0,0,0"
+                               Foreground="#6FA8FF"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Control para regresar al HUD completo.
+                     Se conectara en el siguiente paso. -->
+                <Button Grid.Column="2"
+        Width="22"
+        Height="22"
+        Background="Transparent"
+        BorderThickness="0"
+        Cursor="Hand"
+        ToolTip="Restaurar HUD completo"
+        Click="OnRestoreFullHudClick">
+
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="MiniRestoreBorder"
+                    Width="20"
+                    Height="20"
+                    CornerRadius="10"
+                    Background="#173B6D"
+                    BorderBrush="#4C8DFF"
+                    BorderThickness="1">
+
+                                <TextBlock Text="↗"
+                           Foreground="#6FA8FF"
+                           FontSize="11"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                         Value="True">
+                                    <Setter TargetName="MiniRestoreBorder"
+                            Property="Background"
+                            Value="#204B78" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
         </Border>
     </Grid>

@@ -241,6 +241,9 @@ namespace CoreVigil.UI
 
             _trayIconService.UpdateCpuUsage(
                 _viewModel.CpuUsagePercent);
+
+            UpdateMiniStatusLed(
+                _viewModel.CpuUsagePercent);
         }
 
         private void ApplyHudLayout()

@@ -63,17 +63,78 @@ namespace CoreVigil.Services
             bool topmost,
             bool isCpuActivityExpanded)
         {
+            HudSettings? currentSettings =
+                Load();
+
+            Save(
+                fullLeft:
+                    currentSettings?.FullLeft ??
+                    currentSettings?.Left ??
+                    left,
+                fullTop:
+                    currentSettings?.FullTop ??
+                    currentSettings?.Top ??
+                    top,
+                miniLeft:
+                    currentSettings?.MiniLeft,
+                miniTop:
+                    currentSettings?.MiniTop,
+                topmost:
+                    topmost,
+                isCpuActivityExpanded:
+                    isCpuActivityExpanded,
+                isMiniMode:
+                    currentSettings?.IsMiniMode ??
+                    false);
+        }
+        public void Save(
+    double fullLeft,
+    double fullTop,
+    double? miniLeft,
+    double? miniTop,
+    bool topmost,
+    bool isCpuActivityExpanded,
+    bool isMiniMode)
+        {
             try
             {
-                var settings = new HudSettings
-                {
-                    Left = left,
-                    Top = top,
-                    Topmost = topmost,
-                    IsCpuActivityExpanded = isCpuActivityExpanded
-                };
+                var settings =
+                    new HudSettings
+                    {
+                        // Se conservan para migrar configuraciones
+                        // creadas antes de introducir el modo Mini.
+                        Left =
+                            fullLeft,
 
-                string json = JsonSerializer.Serialize(settings);
+                        Top =
+                            fullTop,
+
+                        FullLeft =
+                            fullLeft,
+
+                        FullTop =
+                            fullTop,
+
+                        MiniLeft =
+                            miniLeft,
+
+                        MiniTop =
+                            miniTop,
+
+                        Topmost =
+                            topmost,
+
+                        IsCpuActivityExpanded =
+                            isCpuActivityExpanded,
+
+                        IsMiniMode =
+                            isMiniMode
+                    };
+
+                string json =
+                    JsonSerializer.Serialize(
+                        settings);
+
                 File.WriteAllText(
                     _settingsPath,
                     json);
@@ -90,9 +151,24 @@ namespace CoreVigil.Services
 
     public sealed class HudSettings
     {
-        public double Left { get; init; }
-        public double Top { get; init; }
+        // Compatibilidad con hud-settings.json anteriores.
+        public double? Left { get; init; }
+
+        public double? Top { get; init; }
+
+        public double? FullLeft { get; init; }
+
+        public double? FullTop { get; init; }
+
+        public double? MiniLeft { get; init; }
+
+        public double? MiniTop { get; init; }
+
         public bool Topmost { get; init; }
-        public bool IsCpuActivityExpanded { get; init; } = true;
+
+        public bool IsCpuActivityExpanded { get; init; } =
+            true;
+
+        public bool IsMiniMode { get; init; }
     }
 }

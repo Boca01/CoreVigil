@@ -41,7 +41,9 @@ namespace CoreVigil.UI
 
         private void RestorePersistedVisualState()
         {
-            HudSettings? settings = _hudSettingsService.Load();
+            HudSettings? settings =
+                _hudSettingsService.Load();
+
             if (settings is null)
             {
                 return;
@@ -54,10 +56,8 @@ namespace CoreVigil.UI
                 CpuActivityExpander.IsExpanded =
                     settings.IsCpuActivityExpanded;
 
-                ApplyPersistedExpansionLayout(
-                    settings.IsCpuActivityExpanded);
-
-                Topmost = settings.Topmost;
+                Topmost =
+                    settings.Topmost;
 
                 TopmostButton.Content =
                     Topmost
@@ -77,29 +77,109 @@ namespace CoreVigil.UI
                                 137,
                                 153));
 
-                Rect workArea =
-                    SystemParameters.WorkArea;
+                _fullHudLeft =
+                    settings.FullLeft ??
+                    settings.Left ??
+                    Left;
 
-                double maxLeft =
-                    workArea.Right - Width;
+                _fullHudTop =
+                    settings.FullTop ??
+                    settings.Top ??
+                    Top;
 
-                double maxTop =
-                    workArea.Bottom - Height;
+                _miniHudLeft =
+                    settings.MiniLeft ??
+                    double.NaN;
 
-                Left = Math.Clamp(
-                    settings.Left,
-                    workArea.Left,
-                    maxLeft);
+                _miniHudTop =
+                    settings.MiniTop ??
+                    double.NaN;
 
-                Top = Math.Clamp(
-                    settings.Top,
-                    workArea.Top,
-                    maxTop);
+                if (settings.IsMiniMode)
+                {
+                    RestorePersistedMiniMode();
+                }
+                else
+                {
+                    RestorePersistedFullMode(
+                        settings.IsCpuActivityExpanded);
+                }
             }
             finally
             {
-                _isRestoringPersistedHudState = false;
+                _isRestoringPersistedHudState =
+                    false;
             }
+        }
+
+        private void RestorePersistedFullMode(
+    bool isExpanded)
+        {
+            MiniHudPanel.Visibility =
+                Visibility.Collapsed;
+
+            HudPanel.Visibility =
+                Visibility.Visible;
+
+            HudLayoutProfile profile =
+                _hudLayoutService.GetProfile(this);
+
+            HudRoot.Margin =
+                new Thickness(
+                    profile.OuterMargin);
+
+            HudPanel.Padding =
+                new Thickness(
+                    profile.PanelPadding);
+
+            ApplyPersistedExpansionLayout(
+                isExpanded);
+
+            Left =
+                _fullHudLeft;
+
+            Top =
+                _fullHudTop;
+
+            KeepFullHudInsideWorkArea();
+        }
+
+        private void RestorePersistedMiniMode()
+        {
+            HudPanel.Visibility =
+                Visibility.Collapsed;
+
+            MiniHudPanel.Visibility =
+                Visibility.Visible;
+
+            HudRoot.Margin =
+                new Thickness(0);
+
+            Width =
+                230.0;
+
+            Height =
+                42.0;
+
+            if (!double.IsNaN(_miniHudLeft) &&
+                !double.IsNaN(_miniHudTop))
+            {
+                Left =
+                    _miniHudLeft;
+
+                Top =
+                    _miniHudTop;
+            }
+            else
+            {
+                Left =
+                    _fullHudLeft;
+
+                Top =
+                    _fullHudTop;
+            }
+
+            KeepMiniHudInsideWorkArea();
         }
 
         private void ApplyPersistedExpansionLayout(
@@ -132,11 +212,45 @@ namespace CoreVigil.UI
 
         private void SavePersistedHudState()
         {
+            bool isMiniMode =
+                IsMiniHudMode;
+
+            if (isMiniMode)
+            {
+                _miniHudLeft =
+                    Left;
+
+                _miniHudTop =
+                    Top;
+            }
+            else
+            {
+                _fullHudLeft =
+                    Left;
+
+                _fullHudTop =
+                    Top;
+            }
+
             _hudSettingsService.Save(
-                Left,
-                Top,
-                Topmost,
-                CpuActivityExpander.IsExpanded);
+                fullLeft:
+                    _fullHudLeft,
+                fullTop:
+                    _fullHudTop,
+                miniLeft:
+                    double.IsNaN(_miniHudLeft)
+                        ? null
+                        : _miniHudLeft,
+                miniTop:
+                    double.IsNaN(_miniHudTop)
+                        ? null
+                        : _miniHudTop,
+                topmost:
+                    Topmost,
+                isCpuActivityExpanded:
+                    CpuActivityExpander.IsExpanded,
+                isMiniMode:
+                    isMiniMode);
         }
     }
 }
