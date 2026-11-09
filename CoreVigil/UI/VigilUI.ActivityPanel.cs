@@ -44,7 +44,25 @@ namespace CoreVigil.UI
             try
             {
                 double preservedLeft = Left;
-                double preservedBottom = Top + ActualHeight;
+
+                Rect workArea =
+                    SystemParameters.WorkArea;
+
+                double currentBottom =
+                    Top + ActualHeight;
+
+                const double taskbarSnapTolerance = 24.0;
+
+                bool isAnchoredToTaskbar =
+                    Math.Abs(
+                        workArea.Bottom -
+                        currentBottom) <=
+                    taskbarSnapTolerance;
+
+                double preservedBottom =
+                    isAnchoredToTaskbar
+                        ? workArea.Bottom
+                        : currentBottom;
 
                 HudLayoutProfile profile =
                     _hudLayoutService.GetProfile(this);
