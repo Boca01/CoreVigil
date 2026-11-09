@@ -57,6 +57,26 @@ namespace CoreVigil.UI
                 ApplyPersistedExpansionLayout(
                     settings.IsCpuActivityExpanded);
 
+                Topmost = settings.Topmost;
+
+                TopmostButton.Content =
+                    Topmost
+                        ? "●"
+                        : "○";
+
+                TopmostButton.Foreground =
+                    Topmost
+                        ? new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromRgb(
+                                111,
+                                168,
+                                255))
+                        : new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromRgb(
+                                127,
+                                137,
+                                153));
+
                 Rect workArea =
                     SystemParameters.WorkArea;
 

@@ -139,7 +139,7 @@
     </Window.Resources>
 
     <Grid x:Name="HudRoot" Margin="14">
-        <Viewbox x:Name="HudViewbox" Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Viewbox x:Name="HudViewbox" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Border x:Name="HudPanel" Width="404" Height="438" CornerRadius="16" BorderThickness="1" BorderBrush="#334C8DFF" Padding="18">
                 <Border.Background>
                     <SolidColorBrush Color="#10131A" Opacity="0.82" />

@@ -272,58 +272,6 @@ namespace CoreVigil.UI
                 profile.Mode;
         }
 
-        private void RestoreHudSettings()
-        {
-            HudSettings? settings =
-                _hudSettingsService.Load();
-
-            if (settings is null)
-            {
-                return;
-            }
-
-            double maxLeft =
-                SystemParameters.VirtualScreenLeft +
-                SystemParameters.VirtualScreenWidth -
-                ActualWidth;
-
-            double maxTop =
-                SystemParameters.VirtualScreenTop +
-                SystemParameters.VirtualScreenHeight -
-                ActualHeight;
-
-            Left =
-                Math.Clamp(
-                    settings.Left,
-                    SystemParameters.VirtualScreenLeft,
-                    maxLeft);
-
-            Top =
-                Math.Clamp(
-                    settings.Top,
-                    SystemParameters.VirtualScreenTop,
-                    maxTop);
-
-            Topmost = settings.Topmost;
-
-            TopmostButton.Content =
-                Topmost
-                    ? "●"
-                    : "○";
-
-            TopmostButton.Foreground =
-                Topmost
-                    ? new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromRgb(
-                            111,
-                            168,
-                            255))
-                    : new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromRgb(
-                            127,
-                            137,
-                            153));
-        }
         private void OnTopmostButtonClick(
     object sender,
     RoutedEventArgs e)

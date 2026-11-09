@@ -43,9 +43,8 @@ namespace CoreVigil.UI
 
             try
             {
-                // Se toma el borde inferior real antes del cambio.
-                double anchoredBottom =
-                    Top + ActualHeight;
+                double preservedLeft = Left;
+                double preservedTop = Top;
 
                 HudLayoutProfile profile =
                     _hudLayoutService.GetProfile(this);
@@ -69,18 +68,19 @@ namespace CoreVigil.UI
                         profile.WindowHeight -
                         removedContentHeight);
 
-                    HudPanel.Height = CollapsedContentHeight;
+                    HudPanel.Height =
+                        CollapsedContentHeight;
                 }
 
-                // Espera a que WPF aplique la nueva geometria antes de anclar.
                 await Dispatcher.InvokeAsync(
                     () => { },
                     DispatcherPriority.Loaded);
 
-                Top = anchoredBottom - ActualHeight;
+                Left = preservedLeft;
+                Top = preservedTop;
+
                 KeepHudInsideWorkArea();
 
-                // Espera una segunda pasada para persistir solo el estado final.
                 await Dispatcher.InvokeAsync(
                     () => { },
                     DispatcherPriority.Loaded);
