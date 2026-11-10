@@ -73,6 +73,11 @@ namespace CoreVigil.UI
             HudPanel.Visibility =
                 Visibility.Visible;
 
+            // El modo Full vuelve a comportarse como una ventana normal
+            // y recupera su acceso desde la barra de tareas.
+            ShowInTaskbar =
+                true;
+
             HudLayoutProfile profile =
                 _hudLayoutService.GetProfile(this);
 
@@ -179,6 +184,11 @@ namespace CoreVigil.UI
 
             MiniHudPanel.Visibility =
                 Visibility.Visible;
+
+            // El modo Mini permanece accesible desde la bandeja del sistema
+            // y no necesita ocupar espacio en la barra de tareas.
+            ShowInTaskbar =
+                false;
 
             HudRoot.Margin =
                 new Thickness(0);
