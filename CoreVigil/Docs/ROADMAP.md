@@ -19,7 +19,8 @@ La base funcional incluye:
 - persistencia visual;
 - bandeja y autoinicio;
 - instancia unica;
-- diagnostico interno.
+- diagnostico interno;
+- proyecto `CoreVigil.Tests` con linea base de 26 pruebas automatizadas.
 
 ## Prioridad 0 - Validacion principal completada
 
@@ -34,11 +35,21 @@ Estado: COMPLETADA.
 
 ## Prioridad 1 - Observabilidad y pruebas automatizadas
 
-Siguiente frente activo:
-- Convertir hallazgos del diagnostico en criterios de regresion.
-- Agregar pruebas automatizadas donde la logica sea independiente de WPF/Windows.
-- Priorizar agrupacion de procesos, persistencia y transformaciones de datos.
-- Mantener las pruebas de UI separadas de la logica que pueda probarse de forma determinista.
+Estado: EN PROGRESO.
+
+Completado hasta el checkpoint actual:
+- proyecto `CoreVigil.Tests` integrado a la solucion;
+- 26/26 pruebas automatizadas en verde;
+- cobertura inicial de ProcessGroupingService;
+- cobertura inicial de HudSettingsService;
+- cobertura de invariantes publicos de RuntimeDiagnosticsService;
+- cobertura de escritura CSV, escape, retencion temporal y limite de tamaño de RuntimeLogWriter;
+- rutas configurables para aislar pruebas de configuracion y logs reales.
+
+Siguiente frente:
+- auditar el siguiente componente por riesgo y valor antes de agregar nuevas pruebas;
+- priorizar comportamiento determinista y regresiones con impacto funcional;
+- evitar introducir abstracciones solamente para incrementar el contador de pruebas.
 
 ## Prioridad 2 - Robustez de procesos
 

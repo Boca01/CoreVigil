@@ -22,6 +22,7 @@ CoreVigil dispone actualmente de:
 - Inicio automatico configurable con Windows.
 - Instancia unica de la aplicacion.
 - Diagnostico interno con sesiones CSV.
+- Proyecto de pruebas automatizadas con linea base de 26/26 pruebas en verde.
 
 ## Arquitectura
 
@@ -32,6 +33,7 @@ El proyecto separa responsabilidades en las siguientes areas:
 - Diagnostics/: captura y escritura de telemetria interna de CoreVigil.
 - ViewModels/: estado presentable y ciclo principal de monitorizacion.
 - UI/: VigilUI y sus parciales para HUD, modos visuales, opacidad y persistencia.
+- CoreVigil.Tests/: pruebas automatizadas de logica determinista y contratos estables.
 
 Para mas detalle consulta docs/ARCHITECTURE.md.
 
@@ -51,7 +53,7 @@ Las posiciones Full y Mini se guardan de forma independiente.
 
 ### Opacidad
 
-La bandeja incluye la opcion `Opacidad...`. Abre un selector temporal con porcentaje y deslizador. El cambio se aplica en tiempo real al fondo de Full y Mini sin reducir la legibilidad de los controles y textos. El selector puede moverse desde su cabecera y conserva tanto la opacidad elegida como su posicion personalizada.
+La bandeja incluye la opcion `Opacidad...`. Abre un selector temporal con porcentaje y deslizador. El cambio se aplica en tiempo real al fondo de Full y Mini sin reducir la legibilidad de controles y textos. El selector puede moverse desde su cabecera y conserva tanto la opacidad elegida como su posicion personalizada.
 
 Consulta docs/HUD.md.
 
@@ -61,14 +63,24 @@ El diagnostico puede activarse desde la bandeja. Registra muestras de ejecucion 
 
 Las pruebas prolongadas Full y Mini fueron completadas y analizadas. No mostraron evidencia clara de fugas ni degradacion progresiva. La estrategia vigente sigue siendo medir primero y optimizar solo cuando exista evidencia.
 
-Consulta docs/DIAGNOSTICS.md y docs/TESTING.md.
+## Pruebas automatizadas
+
+La linea base actual es de 26/26 pruebas correctas:
+- 8 de agrupacion de procesos;
+- 6 de persistencia de preferencias del HUD;
+- 4 de invariantes del diagnostico runtime;
+- 8 de escritura CSV y retencion de logs.
+
+Las pruebas de archivos utilizan rutas temporales para no modificar la configuracion ni los logs reales de CoreVigil.
+
+Consulta docs/TESTING.md.
 
 ## Documentacion
 
 - docs/ARCHITECTURE.md: arquitectura y responsabilidades.
 - docs/HUD.md: HUD Full, Mini, opacidad y persistencia visual.
 - docs/DIAGNOSTICS.md: diagnostico interno y logs.
-- docs/TESTING.md: validaciones realizadas y pruebas pendientes.
+- docs/TESTING.md: validaciones manuales, prolongadas y automatizadas.
 - docs/ROADMAP.md: prioridades futuras.
 - docs/CHANGELOG.md: cambios notables bajo Keep a Changelog 1.1.0.
 
@@ -76,4 +88,4 @@ Consulta docs/DIAGNOSTICS.md y docs/TESTING.md.
 
 El HUD Full y Mini, la persistencia independiente de posiciones, el cambio de modos, el Top 8 revisado, la ocultacion de Mini en la barra de tareas y el control persistente de opacidad han sido validados manualmente.
 
-Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. El siguiente frente de trabajo es Prioridad 1: observabilidad y pruebas automatizadas.
+Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. Prioridad 1 esta en progreso y dispone de una primera barrera automatizada de 26/26 pruebas en verde.

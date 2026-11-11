@@ -29,6 +29,13 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Persistencia de BackgroundOpacity.
 - Persistencia de OpacityPopupHorizontalOffset y OpacityPopupVerticalOffset.
 - VigilUI.Opacity.cs para separar la logica del selector y la aplicacion de opacidad.
+- Proyecto `CoreVigil.Tests` integrado a la solucion.
+- Suite automatizada inicial de 26 pruebas.
+- Ocho pruebas para ProcessGroupingService.
+- Seis pruebas para HudSettingsService.
+- Cuatro pruebas para RuntimeDiagnosticsService.
+- Ocho pruebas para RuntimeLogWriter.
+- Rutas configurables en HudSettingsService y RuntimeLogWriter para ejecutar pruebas aisladas sin tocar configuracion ni logs reales.
 
 ### Changed
 
@@ -41,7 +48,8 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Full y Mini comparten el valor configurable de opacidad de fondo.
 - El modo Mini deja de mostrarse en la barra de tareas y mantiene el acceso desde la bandeja del sistema.
 - La opacidad se aplica al fondo visual del HUD sin reducir globalmente la opacidad de textos y controles.
-- La Prioridad 0 de validacion prolongada Full/Mini queda completada; el siguiente frente es observabilidad y pruebas automatizadas.
+- La Prioridad 0 de validacion prolongada Full/Mini queda completada.
+- La Prioridad 1 avanza con una linea base automatizada de 26/26 pruebas en verde sobre agrupacion, persistencia y diagnostico interno.
 
 ### Fixed
 

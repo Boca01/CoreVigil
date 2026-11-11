@@ -2,9 +2,63 @@
 
 ## Estrategia actual
 
-CoreVigil ha completado la validacion funcional y prolongada principal de los modos Full y Mini. Siguen predominando las pruebas manuales y el diagnostico runtime.
+CoreVigil ha completado la validacion funcional y prolongada principal de los modos Full y Mini. La Prioridad 1 ya incluye una primera barrera automatizada de regresion sobre logica de procesos, persistencia y diagnostico interno.
 
-No se debe presentar una validacion manual como equivalente a una suite automatizada. El siguiente frente es convertir la logica adecuada en pruebas automatizadas y utilizar la evidencia diagnostica como criterio de regresion.
+La validacion manual no se considera equivalente a una suite automatizada. Ambos niveles se mantienen como evidencia complementaria.
+
+## Linea base automatizada
+
+Estado actual validado: 26 de 26 pruebas correctas.
+
+Las pruebas viven en el proyecto `CoreVigil.Tests` y actualmente se organizan en cuatro suites:
+
+### ProcessGroupingServiceTests - 8 pruebas
+
+Protege:
+- lista vacia;
+- argumento nulo;
+- agrupacion de instancias por nombre;
+- comparacion de nombres sin distinguir mayusculas/minusculas;
+- suma del consumo de CPU por grupo;
+- orden de instancias por CPU descendente;
+- desempate de instancias por ProcessId;
+- orden de grupos por CPU total y desempate por nombre.
+
+### HudSettingsServiceTests - 6 pruebas
+
+Protege:
+- carga sin archivo existente;
+- ciclo Save/Load del estado completo;
+- valores nulos para posiciones Mini y selector de opacidad;
+- JSON invalido sin detener la aplicacion;
+- compatibilidad con configuraciones historicas Left/Top;
+- conservacion de opacidad, offsets y estado existente durante guardados parciales.
+
+Las pruebas utilizan rutas temporales aisladas. El servicio mantiene el constructor predeterminado de produccion y dispone de una ruta configurable para pruebas.
+
+### RuntimeDiagnosticsServiceTests - 4 pruebas
+
+Protege invariantes publicos y estables:
+- primera muestra con intervalo y CPU propia en cero;
+- conservacion de los valores recibidos en RuntimeSample;
+- CPU propia dentro del rango de 0 a 100 %;
+- coherencia de IsManagedHeapReadingValid con ManagedHeapBytes.
+
+No se exigen valores exactos dependientes de carga, reloj o hardware.
+
+### RuntimeLogWriterTests - 8 pruebas
+
+Protege:
+- FlushAsync sin muestras no crea archivo;
+- escritura de encabezado y datos;
+- multiples flush sin duplicar encabezado;
+- formato numerico invariante;
+- escape CSV de TrayState;
+- eliminacion de logs con mas de 7 dias;
+- conservacion de logs recientes;
+- limite agregado de 25 MB eliminando primero el log mas antiguo.
+
+Las pruebas se ejecutan sobre carpetas temporales y no utilizan los logs reales de CoreVigil.
 
 ## Validaciones manuales realizadas
 
@@ -104,17 +158,16 @@ Sesion: `runtime-20261110-075548.csv`.
 
 Full y Mini son estables con la evidencia disponible. No existe evidencia clara de fugas ni degradacion progresiva en las sesiones analizadas.
 
-La Prioridad 0 de validacion queda tecnicamente completada.
+La Prioridad 0 queda tecnicamente completada y la Prioridad 1 dispone ya de una linea base de 26 pruebas automatizadas.
 
-## Pruebas pendientes recomendadas
+## Siguientes pruebas recomendadas
 
-- Convertir hallazgos diagnosticos en criterios de regresion.
-- Agregar pruebas automatizadas para servicios puros y logica independiente de WPF/Windows.
-- Priorizar agrupacion de procesos, persistencia y transformaciones de datos.
+- Auditar el siguiente componente por riesgo y valor antes de ampliar la suite.
+- Convertir nuevos hallazgos diagnosticos en criterios de regresion solo cuando sean deterministas.
+- Validar procesos protegidos y procesos que nacen o terminan entre muestras.
 - Validacion multimonitor y DPI mixto.
 - Cambio de resolucion/escala mientras CoreVigil esta abierto.
 - Restauracion tras cambios de disposicion de monitores.
-- Pruebas especificas de procesos que nacen y terminan entre muestras.
 - Repetir sesiones prolongadas solo si aparece nueva evidencia que lo justifique.
 
 ## Criterio de estabilidad
@@ -123,4 +176,5 @@ Una caracteristica puede considerarse estable cuando:
 - compila sin errores;
 - su comportamiento objetivo se reproduce consistentemente;
 - no rompe Full, Mini, bandeja o persistencia;
-- las pruebas relevantes no muestran degradacion atribuible al cambio.
+- las pruebas automatizadas aplicables permanecen en verde;
+- las pruebas prolongadas relevantes no muestran degradacion atribuible al cambio.
