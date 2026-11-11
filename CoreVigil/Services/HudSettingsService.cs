@@ -88,16 +88,35 @@ namespace CoreVigil.Services
                     false);
         }
         public void Save(
-    double fullLeft,
-    double fullTop,
-    double? miniLeft,
-    double? miniTop,
-    bool topmost,
-    bool isCpuActivityExpanded,
-    bool isMiniMode)
+            double fullLeft,
+            double fullTop,
+            double? miniLeft,
+            double? miniTop,
+            bool topmost,
+            bool isCpuActivityExpanded,
+            bool isMiniMode,
+            double? backgroundOpacity = null,
+            double? opacityPopupHorizontalOffset = null,
+            double? opacityPopupVerticalOffset = null)
         {
             try
             {
+                HudSettings? currentSettings =
+                    Load();
+
+                double opacityToSave =
+                    backgroundOpacity ??
+                    currentSettings?.BackgroundOpacity ??
+                    0.82;
+
+                double? popupHorizontalOffsetToSave =
+                    opacityPopupHorizontalOffset ??
+                    currentSettings?.OpacityPopupHorizontalOffset;
+
+                double? popupVerticalOffsetToSave =
+                    opacityPopupVerticalOffset ??
+                    currentSettings?.OpacityPopupVerticalOffset;
+
                 var settings =
                     new HudSettings
                     {
@@ -125,10 +144,19 @@ namespace CoreVigil.Services
                             topmost,
 
                         IsCpuActivityExpanded =
-                            isCpuActivityExpanded,
+                             isCpuActivityExpanded,
 
                         IsMiniMode =
-                            isMiniMode
+                             isMiniMode,
+
+                        BackgroundOpacity =
+                             opacityToSave,
+
+                        OpacityPopupHorizontalOffset =
+                             popupHorizontalOffsetToSave,
+
+                        OpacityPopupVerticalOffset =
+                             popupVerticalOffsetToSave
                     };
 
                 string json =
@@ -170,5 +198,14 @@ namespace CoreVigil.Services
             true;
 
         public bool IsMiniMode { get; init; }
+
+        // Opacidad del fondo compartida por los modos Full y Mini.
+        public double BackgroundOpacity { get; init; } =
+            0.82;
+
+        // Posicion personalizada del selector de opacidad.
+        // Los valores nulos indican que debe utilizar su posicion automatica.
+        public double? OpacityPopupHorizontalOffset { get; init; }
+        public double? OpacityPopupVerticalOffset { get; init; }
     }
 }

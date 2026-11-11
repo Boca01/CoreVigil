@@ -51,6 +51,8 @@ namespace CoreVigil.UI
             _diagnosticsSettingsService =
                 new DiagnosticsSettingsService();
             _trayIconService.ShowRequested += OnTrayShowRequested;
+            _trayIconService.OpacityRequested +=
+                OnOpacityRequested;
             _trayIconService.StartupToggleRequested +=
                 OnStartupToggleRequested;
             _trayIconService.DiagnosticsToggleRequested +=

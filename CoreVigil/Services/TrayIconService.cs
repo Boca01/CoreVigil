@@ -63,6 +63,9 @@ namespace CoreVigil.Services
             var showItem =
                 new ToolStripMenuItem("Mostrar CoreVigil");
 
+            var opacityItem =
+                new ToolStripMenuItem("Opacidad...");
+
             var startupItem =
                  new ToolStripMenuItem("Iniciar con Windows")
                 {
@@ -82,6 +85,11 @@ namespace CoreVigil.Services
 
             showItem.Click +=
                 (_, _) => ShowRequested?.Invoke(
+                    this,
+                    EventArgs.Empty);
+
+            opacityItem.Click +=
+                (_, _) => OpacityRequested?.Invoke(
                     this,
                     EventArgs.Empty);
 
@@ -108,6 +116,8 @@ namespace CoreVigil.Services
 
             _contextMenu.Items.Add(
                 new ToolStripSeparator());
+
+            _contextMenu.Items.Add(opacityItem);
 
             _contextMenu.Items.Add(startupItem);
 
@@ -137,6 +147,7 @@ namespace CoreVigil.Services
 
 
         public event EventHandler? ShowRequested;
+        public event EventHandler? OpacityRequested;
         public event EventHandler? ExitRequested;
         public event EventHandler? StartupToggleRequested;
         public event EventHandler? DiagnosticsToggleRequested;

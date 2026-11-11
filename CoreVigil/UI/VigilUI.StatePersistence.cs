@@ -95,6 +95,21 @@ namespace CoreVigil.UI
                     settings.MiniTop ??
                     double.NaN;
 
+                _backgroundOpacity =
+                    Math.Clamp(
+                        settings.BackgroundOpacity,
+                        0.30,
+                        1.0);
+
+                ApplyBackgroundOpacity();
+                UpdateOpacityValueText();
+
+                _opacityPopupHorizontalOffset =
+                    settings.OpacityPopupHorizontalOffset;
+
+                _opacityPopupVerticalOffset =
+                    settings.OpacityPopupVerticalOffset;
+
                 if (settings.IsMiniMode)
                 {
                     RestorePersistedMiniMode();
@@ -260,7 +275,13 @@ namespace CoreVigil.UI
                 isCpuActivityExpanded:
                     CpuActivityExpander.IsExpanded,
                 isMiniMode:
-                    isMiniMode);
+                    isMiniMode,
+                backgroundOpacity:
+                    _backgroundOpacity,
+                opacityPopupHorizontalOffset:
+                    _opacityPopupHorizontalOffset,
+                opacityPopupVerticalOffset:
+                    _opacityPopupVerticalOffset);
         }
     }
 }
