@@ -21,13 +21,23 @@ namespace CoreVigil.Diagnostics
         private readonly string _logPath;
 
         public RuntimeLogWriter()
-        {
-            _logsDirectory =
+            : this(
                 Path.Combine(
                     Environment.GetFolderPath(
                         Environment.SpecialFolder.LocalApplicationData),
                     "CoreVigil",
-                    "Logs");
+                    "Logs"))
+        {
+        }
+
+        public RuntimeLogWriter(
+            string logsDirectory)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(
+                logsDirectory);
+
+            _logsDirectory =
+                logsDirectory;
 
             Directory.CreateDirectory(
                 _logsDirectory);
@@ -41,7 +51,6 @@ namespace CoreVigil.Diagnostics
                 Path.Combine(
                     _logsDirectory,
                     fileName);
-
         }
 
         private void CleanupOldLogs()

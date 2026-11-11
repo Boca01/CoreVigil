@@ -11,17 +11,33 @@ namespace CoreVigil.Services
         private readonly string _settingsPath;
 
         public HudSettingsService()
+            : this(
+                Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.LocalApplicationData),
+                    "CoreVigil",
+                    "hud-settings.json"))
         {
-            string directory = Path.Combine(
-                Environment.GetFolderPath(
-                    Environment.SpecialFolder.LocalApplicationData),
-                "CoreVigil");
+        }
 
-            Directory.CreateDirectory(directory);
+        public HudSettingsService(
+            string settingsPath)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(
+                settingsPath);
 
-            _settingsPath = Path.Combine(
-                directory,
-                "hud-settings.json");
+            string? directory =
+                Path.GetDirectoryName(
+                    settingsPath);
+
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(
+                    directory);
+            }
+
+            _settingsPath =
+                settingsPath;
         }
 
         public HudSettings? Load()
