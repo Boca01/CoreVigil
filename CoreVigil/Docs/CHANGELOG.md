@@ -4,7 +4,7 @@ Todos los cambios notables de CoreVigil se documentaran en este archivo.
 
 El formato esta basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-No se asignan versiones historicas que no hayan sido definidas formalmente. Los cambios actuales permanecen en `Unreleased` hasta que se establezca una version del proyecto.
+No se asignan versiones historicas que no hayan sido definidas formalmente. Los cambios actuales permanecen en Unreleased hasta que se establezca una version del proyecto.
 
 ## [Unreleased]
 
@@ -13,25 +13,35 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - HUD Mini para visualizacion compacta de CPU y RAM.
 - LED dinamico en Mini para representar niveles de carga de CPU.
 - Posiciones independientes para los modos Full y Mini.
-- Persistencia del modo visual mediante `IsMiniMode`.
-- Persistencia dedicada de `FullLeft`, `FullTop`, `MiniLeft` y `MiniTop`.
-- Compatibilidad de persistencia con las coordenadas historicas `Left` y `Top`.
+- Persistencia del modo visual mediante IsMiniMode.
+- Persistencia dedicada de FullLeft, FullTop, MiniLeft y MiniTop.
+- Compatibilidad de persistencia con las coordenadas historicas Left y Top.
 - Vista de Actividad CPU con modos AGRUPAR e INDIVIDUAL.
 - Grupos desplegables con instancias y PID.
-- Diagnostico interno basado en `RuntimeSample`, `RuntimeDiagnosticsService` y `RuntimeLogWriter`.
+- Diagnostico interno basado en RuntimeSample, RuntimeDiagnosticsService y RuntimeLogWriter.
 - Activacion del diagnostico y acceso a la carpeta de logs desde la bandeja.
 - Iconos dinamicos de bandeja para estados Low, Medium, High y Critical.
 - Inicio automatico configurable con Windows.
 - Control de instancia unica de CoreVigil.
+- Opcion `Opacidad...` en la bandeja del sistema.
+- Selector temporal de opacidad con porcentaje y rango de 30 % a 100 %.
+- Arrastre independiente del selector de opacidad mediante su cabecera.
+- Persistencia de BackgroundOpacity.
+- Persistencia de OpacityPopupHorizontalOffset y OpacityPopupVerticalOffset.
+- VigilUI.Opacity.cs para separar la logica del selector y la aplicacion de opacidad.
 
 ### Changed
 
-- La ventana principal fue reorganizada como `CoreVigil.UI.VigilUI` y dividida en parciales especializados.
+- La ventana principal fue reorganizada como CoreVigil.UI.VigilUI y dividida en parciales especializados.
 - El HUD Full utiliza perfiles de layout adaptables.
 - El cambio expandido/contraido de Actividad CPU conserva el borde inferior de la ventana.
 - El Top 8 ahora parte de todas las instancias medidas disponibles antes de aplicar los limites de vista individual o agrupada.
 - AGRUPAR suma el consumo de las instancias del mismo nombre antes de limitar la vista a ocho grupos.
-- Full y Mini comparten el mismo `MainViewModel` y el mismo nucleo de monitorizacion.
+- Full y Mini comparten el mismo MainViewModel y el mismo nucleo de monitorizacion.
+- Full y Mini comparten el valor configurable de opacidad de fondo.
+- El modo Mini deja de mostrarse en la barra de tareas y mantiene el acceso desde la bandeja del sistema.
+- La opacidad se aplica al fondo visual del HUD sin reducir globalmente la opacidad de textos y controles.
+- La Prioridad 0 de validacion prolongada Full/Mini queda completada; el siguiente frente es observabilidad y pruebas automatizadas.
 
 ### Fixed
 
@@ -43,12 +53,11 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 ## Convenciones
 
 Este changelog sigue las categorias recomendadas por Keep a Changelog cuando sean aplicables:
-
-- `Added`
-- `Changed`
-- `Deprecated`
-- `Removed`
-- `Fixed`
-- `Security`
+- Added
+- Changed
+- Deprecated
+- Removed
+- Fixed
+- Security
 
 Las secciones sin cambios notables se omiten para reducir ruido.

@@ -11,7 +11,6 @@ El diagnostico interno existe para medir el comportamiento de CoreVigil durante 
 Representa una muestra de ejecucion.
 
 La telemetria registrada incluye datos destinados a observar, entre otros aspectos:
-
 - CPU propia de CoreVigil;
 - Working Set;
 - heap administrado;
@@ -29,7 +28,7 @@ Captura las muestras de diagnostico de la propia aplicacion.
 
 Acumula y escribe muestras en sesiones CSV.
 
-El flujo vigente realiza flush periodico y un flush final al detener el diagnostico limpiamente.
+El flujo vigente realiza flush periodico y un flush final al detener el diagnostico limpiamente. El diagnostico mantiene sesiones CSV separadas y aplica la politica de retencion configurada para los logs.
 
 ## Activacion
 
@@ -39,40 +38,64 @@ El diagnostico se puede activar o desactivar desde la bandeja de CoreVigil. La b
 
 CoreVigil sigue esta regla:
 
-> Medir primero; optimizar despues.
+**Medir primero; optimizar despues.**
 
 Un consumo puntual no basta para justificar un cambio. Se buscan tendencias sostenidas y diferencias reproducibles.
 
-## Prueba prolongada actual
+## Validacion prolongada completada
 
-Estado: EN CURSO.
+La validacion prolongada Full/Mini quedo completada y analizada.
 
-Plan de validacion:
+### HUD Full
 
-1. 2 horas con HUD Full visible.
-2. 2 horas con HUD Mini visible.
-3. Diagnostico interno activado durante ambas fases.
-4. Uso normal del equipo, intentando mantener condiciones comparables.
-5. Analisis posterior de los CSV.
+Sesion analizada: `runtime-20261109-115635.csv`.
 
-## Criterios de analisis
+Resultados registrados:
+- duracion aproximada: 2 h 06 min;
+- 7455 muestras;
+- CPU propia promedio: aproximadamente 0.224 %;
+- mediana de CPU: 0.130 %;
+- P95 de CPU: aproximadamente 0.519 %;
+- P99 de CPU: aproximadamente 0.766 %;
+- maximo aislado de CPU: 2.939 %;
+- intervalo medio: aproximadamente 1014.34 ms;
+- P95 del intervalo: aproximadamente 1024.91 ms;
+- Working Set promedio: aproximadamente 179.58 MB;
+- el Working Set termino por debajo del valor inicial;
+- heap administrado promedio: aproximadamente 9.06 MB;
+- no se observo crecimiento progresivo del heap.
 
-Cuando finalicen las sesiones se compararan:
+### HUD Mini
 
-- CPU propia media y distribucion de picos;
-- Working Set inicial, final y tendencia;
-- heap administrado inicial, final y tendencia;
-- estabilidad del intervalo de muestreo;
-- diferencias Full frente a Mini;
-- comportamiento mientras el HUD permanece visible;
-- cualquier crecimiento sostenido que pueda indicar fuga o retencion innecesaria.
+Sesion analizada: `runtime-20261110-075548.csv`.
 
-## Resultado anterior disponible
+Resultados registrados:
+- duracion aproximada: 2 h 48 min;
+- 9940 muestras;
+- CPU propia promedio: aproximadamente 0.168 %;
+- mediana de CPU: 0.129 %;
+- P95 de CPU: aproximadamente 0.390 %;
+- P99 de CPU: aproximadamente 0.646 %;
+- Working Set promedio: aproximadamente 164.53 MB;
+- Working Set final: aproximadamente 168.65 MB;
+- heap administrado promedio: aproximadamente 9.25 MB;
+- no se observo crecimiento progresivo del heap;
+- intervalo promedio: aproximadamente 1012.83 ms;
+- se observo un pico aislado del intervalo de aproximadamente 5523 ms;
+- dos lecturas invalidas de heap fueron marcadas correctamente con `IsManagedHeapReadingValid=False`.
 
-Una sesion previa de aproximadamente 1 h 42 min fue analizada antes de la actual ronda de cambios. El checkpoint conservado registra CPU propia estabilizada alrededor de 0.176 % de promedio, P95 aproximado de 0.389 %, intervalo cercano a 1015 ms, Working Set alrededor de 173 MB y heap administrado alrededor de 10.7 MB, sin evidencia de crecimiento progresivo en esa muestra.
+## Dictamen
 
-Ese resultado es una referencia historica, no una sustitucion de la prueba actual Full/Mini.
+Los modos Full y Mini se consideran estables con la evidencia disponible. No se observo evidencia clara de fugas ni degradacion progresiva durante las pruebas prolongadas.
+
+La Prioridad 0 de validacion prolongada queda tecnicamente completada. Los resultados no justifican una optimizacion basada unicamente en intuicion.
+
+## Resultado historico anterior
+
+Una sesion previa de aproximadamente 1 h 42 min registro CPU propia alrededor de 0.176 % de promedio, P95 aproximado de 0.389 %, intervalo cercano a 1015 ms, Working Set alrededor de 173 MB y heap administrado alrededor de 10.7 MB, sin evidencia de crecimiento progresivo en esa muestra.
+
+Este resultado se conserva como referencia historica.
 
 ## Regla de interpretacion
 
-No atribuir diferencias Full/Mini al modo visual si las sesiones tuvieron cargas de trabajo radicalmente diferentes. Si el resultado es ambiguo, repetir con una prueba mas larga o condiciones mas controladas.
+No atribuir diferencias Full/Mini al modo visual si las sesiones tuvieron cargas de trabajo diferentes. Si un resultado futuro es ambiguo, repetir con una prueba mas larga o condiciones mas controladas.
