@@ -39,11 +39,15 @@ Estado: EN PROGRESO.
 
 Completado hasta el checkpoint actual:
 - proyecto `CoreVigil.Tests` integrado a la solucion;
-- 26/26 pruebas automatizadas en verde;
+- 34/34 pruebas automatizadas en verde;
 - cobertura inicial de ProcessGroupingService;
 - cobertura inicial de HudSettingsService;
 - cobertura de invariantes publicos de RuntimeDiagnosticsService;
 - cobertura de escritura CSV, escape, retencion temporal y limite de tamaño de RuntimeLogWriter;
+- conservacion del lote ante fallo de escritura y reintento posterior;
+- limite y contador de descartes del buffer de muestras;
+- prueba del propietario del mutex y cancelacion de ProcessMonitor;
+- cálculo y fallback de frecuencia actual de CPU, incluida frecuencia turbo;
 - rutas configurables para aislar pruebas de configuracion y logs reales.
 
 Siguiente frente:

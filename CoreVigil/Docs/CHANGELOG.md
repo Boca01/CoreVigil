@@ -36,6 +36,13 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Cuatro pruebas para RuntimeDiagnosticsService.
 - Ocho pruebas para RuntimeLogWriter.
 - Rutas configurables en HudSettingsService y RuntimeLogWriter para ejecutar pruebas aisladas sin tocar configuracion ni logs reales.
+- `SingleInstanceGuard` para adquirir/liberar el mutex de instancia única solo cuando se posee.
+- Límite de 10.000 muestras en memoria para el diagnóstico y contador de muestras descartadas.
+- Estado visible de error/reintento del diagnóstico en Full y en el tooltip de bandeja.
+- Comprobación de errores Win32 al aplicar estilos de Alt+Tab.
+- Fallback a la frecuencia actual reportada por Windows mientras PDH recopila un intervalo válido.
+- Aceptación de los estados PDH `VALID_DATA` y `NEW_DATA` para evitar descartar muestras válidas.
+- Pruebas para mutex, cancelación de procesos, capacidad del búfer y cálculo/fallback de frecuencia.
 
 ### Changed
 
@@ -47,9 +54,11 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Full y Mini comparten el mismo MainViewModel y el mismo nucleo de monitorizacion.
 - Full y Mini comparten el valor configurable de opacidad de fondo.
 - El modo Mini deja de mostrarse en la barra de tareas y mantiene el acceso desde la bandeja del sistema.
+- La enumeración de procesos se ejecuta fuera del hilo de UI, comprueba cancelación entre procesos y libera los objetos pendientes.
+- La primera lectura de frecuencia deja de asumir 100 % de rendimiento y conserva frecuencias turbo por encima del máximo nominal.
 - La opacidad se aplica al fondo visual del HUD sin reducir globalmente la opacidad de textos y controles.
 - La Prioridad 0 de validacion prolongada Full/Mini queda completada.
-- La Prioridad 1 avanza con una linea base automatizada de 26/26 pruebas en verde sobre agrupacion, persistencia y diagnostico interno.
+- La Prioridad 1 avanza con una línea base automatizada de 34/34 pruebas en verde sobre agrupación, persistencia, diagnóstico, mutex, cancelación y frecuencia de CPU.
 
 ### Fixed
 

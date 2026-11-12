@@ -120,7 +120,12 @@ namespace CoreVigil.UI
         {
             if (_diagnosticsSettingsService.IsEnabled())
             {
-                StartDiagnostics();
+                if (!StartDiagnostics())
+                {
+                    _diagnosticsSettingsService.SetEnabled(false);
+                    _trayIconService.SetDiagnosticsEnabled(false);
+                    SetDiagnosticsStatus("Diagnóstico no disponible");
+                }
             }
 
             await _viewModel.StartMonitoringAsync(
@@ -154,11 +159,16 @@ namespace CoreVigil.UI
                             Topmost,
                             _trayIconService.CurrentState.ToString());
 
-                    _runtimeLogWriter.Add(sample);
+                    if (_runtimeLogWriter.Add(sample))
+                    {
+                        SetDiagnosticsStatus(
+                            "Aviso: muestras antiguas perdidas");
+                    }
 
                     if (DateTime.UtcNow >= nextFlushUtc)
                     {
                         await _runtimeLogWriter.FlushAsync();
+                        UpdateDiagnosticsStatusAfterFlush();
 
                         nextFlushUtc =
                             DateTime.UtcNow.AddSeconds(30);
@@ -172,39 +182,99 @@ namespace CoreVigil.UI
                 {
                     break;
                 }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(
+                        $"Falló una iteración del diagnóstico: {ex}");
+
+                    SetDiagnosticsStatus(
+                        _runtimeLogWriter?.DroppedSampleCount > 0
+                            ? "Aviso: muestras antiguas perdidas"
+                            : "Error guardando diagnóstico");
+
+                    try
+                    {
+                        await Task.Delay(
+                            TimeSpan.FromSeconds(5),
+                            cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
             }
         }
 
-        private void StartDiagnostics()
+        private bool StartDiagnostics()
         {
             if (_diagnosticsTask is
                 { IsCompleted: false })
             {
-                return;
+                return true;
             }
 
-            _runtimeDiagnosticsService =
-                new RuntimeDiagnosticsService();
+            try
+            {
+                _runtimeDiagnosticsService =
+                    new RuntimeDiagnosticsService();
 
-            _runtimeLogWriter =
-                new RuntimeLogWriter();
+                _runtimeLogWriter ??=
+                    new RuntimeLogWriter();
 
-            _diagnosticsCancellation =
-                new CancellationTokenSource();
+                _diagnosticsCancellation =
+                    new CancellationTokenSource();
 
-            _diagnosticsTask =
-                RunDiagnosticsAsync(
-                    _diagnosticsCancellation.Token);
+                _diagnosticsTask =
+                    RunDiagnosticsAsync(
+                        _diagnosticsCancellation.Token);
+
+                if (_runtimeLogWriter.DroppedSampleCount > 0)
+                {
+                    SetDiagnosticsStatus(
+                        "Aviso: muestras antiguas perdidas");
+                }
+                else if (_runtimeLogWriter.BufferedSampleCount > 0)
+                {
+                    SetDiagnosticsStatus(
+                        "Reintentando guardar diagnóstico");
+                }
+                else
+                {
+                    SetDiagnosticsStatus(null);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"No fue posible iniciar el diagnóstico: {ex}");
+                SetDiagnosticsStatus(
+                    "Diagnóstico no disponible");
+
+                _runtimeDiagnosticsService?.Dispose();
+                _runtimeDiagnosticsService = null;
+
+                _diagnosticsCancellation?.Dispose();
+                _diagnosticsCancellation = null;
+                _diagnosticsTask = null;
+
+                return false;
+            }
         }
 
         private async Task StopDiagnosticsAsync()
         {
-            if (_diagnosticsCancellation is null)
+            CancellationTokenSource? diagnosticsCancellation =
+                _diagnosticsCancellation;
+
+            if (diagnosticsCancellation is null)
             {
                 return;
             }
 
-            _diagnosticsCancellation.Cancel();
+            diagnosticsCancellation.Cancel();
 
             if (_diagnosticsTask is not null)
             {
@@ -215,20 +285,64 @@ namespace CoreVigil.UI
                 catch (OperationCanceledException)
                 {
                 }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(
+                        $"Falló la tarea de diagnóstico al detenerse: {ex}");
+                }
             }
 
-            if (_runtimeLogWriter is not null)
+            bool flushSucceeded =
+                _runtimeLogWriter is null;
+
+            try
             {
-                await _runtimeLogWriter.FlushAsync();
+                if (_runtimeLogWriter is not null)
+                {
+                    await _runtimeLogWriter.FlushAsync();
+                    flushSucceeded = true;
+                    UpdateDiagnosticsStatusAfterFlush();
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"No fue posible guardar las últimas muestras: {ex}");
 
-            _runtimeDiagnosticsService?.Dispose();
-            _diagnosticsCancellation.Dispose();
+                SetDiagnosticsStatus(
+                    _runtimeLogWriter?.DroppedSampleCount > 0
+                        ? "Aviso: muestras antiguas perdidas"
+                        : "Error al guardar últimas muestras");
+            }
+            finally
+            {
+                _runtimeDiagnosticsService?.Dispose();
+                diagnosticsCancellation.Dispose();
 
-            _runtimeDiagnosticsService = null;
-            _runtimeLogWriter = null;
-            _diagnosticsCancellation = null;
-            _diagnosticsTask = null;
+                _runtimeDiagnosticsService = null;
+                _diagnosticsCancellation = null;
+                _diagnosticsTask = null;
+
+                if (flushSucceeded)
+                {
+                    _runtimeLogWriter = null;
+                }
+            }
+        }
+
+        private void UpdateDiagnosticsStatusAfterFlush()
+        {
+            SetDiagnosticsStatus(
+                _runtimeLogWriter?.DroppedSampleCount > 0
+                    ? "Aviso: muestras antiguas perdidas"
+                    : null);
+        }
+
+        private void SetDiagnosticsStatus(
+            string? status)
+        {
+            _viewModel.SetDiagnosticsStatus(status);
+            _trayIconService.SetDiagnosticsStatus(status);
         }
 
         private void OnViewModelPropertyChanged(
@@ -385,13 +499,14 @@ namespace CoreVigil.UI
 
             if (enabled)
             {
+                bool started =
+                    StartDiagnostics();
+
                 _diagnosticsSettingsService.SetEnabled(
-                    true);
+                    started);
 
                 _trayIconService.SetDiagnosticsEnabled(
-                    true);
-
-                StartDiagnostics();
+                    started);
             }
             else
             {

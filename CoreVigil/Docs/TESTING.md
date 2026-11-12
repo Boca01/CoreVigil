@@ -8,9 +8,9 @@ La validacion manual no se considera equivalente a una suite automatizada. Ambos
 
 ## Linea base automatizada
 
-Estado actual validado: 26 de 26 pruebas correctas.
+Estado actual validado: 34 de 34 pruebas correctas.
 
-Las pruebas viven en el proyecto `CoreVigil.Tests` y actualmente se organizan en cuatro suites:
+Las pruebas viven en el proyecto `CoreVigil.Tests` y actualmente se organizan en siete suites:
 
 ### ProcessGroupingServiceTests - 8 pruebas
 
@@ -46,19 +46,37 @@ Protege invariantes publicos y estables:
 
 No se exigen valores exactos dependientes de carga, reloj o hardware.
 
-### RuntimeLogWriterTests - 8 pruebas
+### RuntimeLogWriterTests - 10 pruebas
 
 Protege:
 - FlushAsync sin muestras no crea archivo;
 - escritura de encabezado y datos;
+- conservación de muestras y reintento después de un error de escritura;
 - multiples flush sin duplicar encabezado;
 - formato numerico invariante;
 - escape CSV de TrayState;
 - eliminacion de logs con mas de 7 dias;
 - conservacion de logs recientes;
 - limite agregado de 25 MB eliminando primero el log mas antiguo.
+- limite de 10.000 muestras en memoria y contador de descartes de las mas antiguas.
 
 Las pruebas se ejecutan sobre carpetas temporales y no utilizan los logs reales de CoreVigil.
+
+### SingleInstanceGuardTests - 1 prueba
+
+Protege la propiedad exclusiva del mutex, la salida de la segunda instancia sin liberación indebida y la adquisición posterior al cierre del propietario.
+
+### ProcessMonitorTests - 1 prueba
+
+Protege la cancelación del monitor durante el intervalo de muestreo inicial.
+
+### CpuFrequencyMonitorTests - 4 pruebas
+
+Protege:
+- uso del `CurrentMhz` de Windows cuando PDH todavía no tiene una muestra válida;
+- cálculo de frecuencia a partir del porcentaje de rendimiento PDH;
+- conservación de frecuencias turbo superiores al máximo nominal;
+- fallback cuando PDH entrega un valor no finito.
 
 ## Validaciones manuales realizadas
 
@@ -67,6 +85,7 @@ Las pruebas se ejecutan sobre carpetas temporales y no utilizan los logs reales 
 - La aplicacion permanece residente en bandeja al ocultar la ventana.
 - La salida explicita cierra el proceso.
 - La instancia unica ha sido validada: una segunda ejecucion no abre otro CoreVigil.
+- El usuario verifico que Full aparece en Alt+Tab y Mini no aparece; ambos modos siguen accesibles según corresponda.
 
 ### HUD Full
 

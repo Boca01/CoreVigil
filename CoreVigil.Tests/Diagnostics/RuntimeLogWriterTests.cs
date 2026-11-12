@@ -93,6 +93,102 @@ namespace CoreVigil.Tests.Diagnostics
         }
 
         [Fact]
+        public async Task FlushAsync_SiFallaConservaMuestrasParaReintento()
+        {
+            string directory =
+                CreateTemporaryDirectory();
+
+            try
+            {
+                var writer =
+                    new RuntimeLogWriter(
+                        directory);
+
+                writer.Add(
+                    CreateSample(
+                        trayState: "Low"));
+
+                Directory.Delete(directory);
+                File.WriteAllText(
+                    directory,
+                    "bloqueo");
+
+                await Assert.ThrowsAnyAsync<IOException>(
+                    () => writer.FlushAsync());
+
+                File.Delete(directory);
+                Directory.CreateDirectory(directory);
+
+                await writer.FlushAsync();
+
+                string[] lines =
+                    await File.ReadAllLinesAsync(
+                        writer.LogPath);
+
+                Assert.Equal(
+                    2,
+                    lines.Length);
+
+                Assert.EndsWith(
+                    ",Low",
+                    lines[1]);
+            }
+            finally
+            {
+                if (File.Exists(directory))
+                {
+                    File.Delete(directory);
+                }
+
+                DeleteTemporaryDirectory(
+                    directory);
+            }
+        }
+
+        [Fact]
+        public void Add_AlSuperarElLimite_DescartaMuestrasAntiguasYLasCuenta()
+        {
+            string directory =
+                CreateTemporaryDirectory();
+
+            try
+            {
+                var writer =
+                    new RuntimeLogWriter(
+                        directory);
+
+                int droppedDuringTest = 0;
+
+                for (int i = 0; i < 10_002; i++)
+                {
+                    if (writer.Add(
+                            CreateSample(
+                                trayState: i.ToString())))
+                    {
+                        droppedDuringTest++;
+                    }
+                }
+
+                Assert.Equal(
+                    10_000,
+                    writer.BufferedSampleCount);
+
+                Assert.Equal(
+                    2,
+                    writer.DroppedSampleCount);
+
+                Assert.Equal(
+                    2,
+                    droppedDuringTest);
+            }
+            finally
+            {
+                DeleteTemporaryDirectory(
+                    directory);
+            }
+        }
+
+        [Fact]
         public async Task FlushAsync_EnVariasLlamadas_NoRepiteEncabezado()
         {
             string directory =

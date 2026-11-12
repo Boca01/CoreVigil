@@ -10,6 +10,7 @@ namespace CoreVigil.Services
     /// </summary>
     public sealed class TrayIconService : IDisposable
     {
+        private const int MaximumNotifyIconTextLength = 63;
         private readonly NotifyIcon _notifyIcon;
         private readonly ContextMenuStrip _contextMenu;
         private CpuTrayState _cpuState = CpuTrayState.Unknown;
@@ -17,6 +18,8 @@ namespace CoreVigil.Services
         private readonly Icon _mediumIcon;
         private readonly Icon _highIcon;
         private readonly Icon _criticalIcon;
+        private double _latestCpuUsagePercent;
+        private string? _diagnosticsStatus;
         public TrayIconService()
         {
             string basePath =
@@ -181,6 +184,17 @@ namespace CoreVigil.Services
             }
         }
 
+        public void SetDiagnosticsStatus(
+            string? status)
+        {
+            _diagnosticsStatus =
+                string.IsNullOrWhiteSpace(status)
+                    ? null
+                    : status;
+
+            UpdateNotifyIconText();
+        }
+
         public void UpdateCpuUsage(
             double usagePercent)
         {
@@ -193,34 +207,47 @@ namespace CoreVigil.Services
                     _ => CpuTrayState.Critical
                 };
 
-            if (_cpuState == newState)
+            if (_cpuState != newState)
             {
-                return;
+                _cpuState = newState;
+
+                _notifyIcon.Icon =
+                    newState switch
+                    {
+                        CpuTrayState.Low =>
+                            _lowIcon,
+
+                        CpuTrayState.Medium =>
+                            _mediumIcon,
+
+                        CpuTrayState.High =>
+                            _highIcon,
+
+                        CpuTrayState.Critical =>
+                            _criticalIcon,
+
+                        _ =>
+                            _lowIcon
+                    };
             }
 
-            _cpuState = newState;
+            _latestCpuUsagePercent =
+                usagePercent;
 
-            _notifyIcon.Icon =
-                newState switch
-                {
-                    CpuTrayState.Low =>
-                        _lowIcon,
+            UpdateNotifyIconText();
+        }
 
-                    CpuTrayState.Medium =>
-                        _mediumIcon,
-
-                    CpuTrayState.High =>
-                        _highIcon,
-
-                    CpuTrayState.Critical =>
-                        _criticalIcon,
-
-                    _ =>
-                        _lowIcon
-                };
+        private void UpdateNotifyIconText()
+        {
+            string text =
+                _diagnosticsStatus is null
+                    ? $"CoreVigil - CPU {_latestCpuUsagePercent:F0}%"
+                    : $"CoreVigil - {_diagnosticsStatus}";
 
             _notifyIcon.Text =
-                $"CoreVigil - CPU {usagePercent:F0}%";
+                text.Length <= MaximumNotifyIconTextLength
+                    ? text
+                    : text[..MaximumNotifyIconTextLength];
         }
 
         public void Dispose()

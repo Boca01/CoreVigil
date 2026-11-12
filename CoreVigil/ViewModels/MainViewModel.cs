@@ -24,6 +24,7 @@ namespace CoreVigil.ViewModels
         private double _cpuMaximumFrequencyMhz;
         private double _cpuFrequencyLimitMhz;
         private string _statusText = "Preparando monitor...";
+        private string? _diagnosticsStatusText;
         private TimeSpan _systemUptime;
         private string _processorName = "Procesador desconocido";
         private int _logicalProcessorCount;
@@ -102,7 +103,7 @@ namespace CoreVigil.ViewModels
 
         public string StatusText
         {
-            get => _statusText;
+            get => _diagnosticsStatusText ?? _statusText;
             private set
             {
                 if (_statusText == value)
@@ -113,6 +114,18 @@ namespace CoreVigil.ViewModels
                 _statusText = value;
                 OnPropertyChanged();
             }
+        }
+
+        public void SetDiagnosticsStatus(
+            string? status)
+        {
+            if (_diagnosticsStatusText == status)
+            {
+                return;
+            }
+
+            _diagnosticsStatusText = status;
+            OnPropertyChanged(nameof(StatusText));
         }
 
         public double CpuMaximumFrequencyMhz
@@ -276,9 +289,13 @@ namespace CoreVigil.ViewModels
                     if (DateTime.UtcNow >= _nextProcessRefreshUtc)
                     {
                         IReadOnlyList<ProcessSnapshot> measuredProcesses =
-                            await _processMonitor.GetTopProcessesAsync(
-                                int.MaxValue,
+                            await Task.Run(
+                                () => _processMonitor.GetTopProcessesAsync(
+                                    int.MaxValue,
+                                    cancellationToken),
                                 cancellationToken);
+
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         TopProcesses =
                             measuredProcesses
@@ -302,6 +319,9 @@ namespace CoreVigil.ViewModels
                             DateTime.UtcNow.AddSeconds(3);
                     }
 
+                    StatusText =
+                        "Monitorizando CPU";
+
                     await Task.Delay(
                         TimeSpan.FromSeconds(1),
                         cancellationToken);
@@ -310,10 +330,14 @@ namespace CoreVigil.ViewModels
                 {
                     break;
                 }
-                catch
+                catch (Exception ex)
                 {
                     StatusText =
-                        "No fue posible leer la CPU";
+                        "No fue posible actualizar la telemetría";
+
+                    Debug.WriteLine(
+                        $"No fue posible actualizar la telemetría: {ex}");
+
                     await Task.Delay(
                         TimeSpan.FromSeconds(2),
                         cancellationToken);

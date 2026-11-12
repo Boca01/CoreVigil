@@ -29,38 +29,54 @@ namespace CoreVigil.Monitoring
 
             if (!_hasPreviousSample)
             {
-                CaptureInitialSample();
+                CaptureInitialSample(
+                    cancellationToken);
 
                 await Task.Delay(
                     TimeSpan.FromMilliseconds(500),
                     cancellationToken);
             }
 
-            return CaptureUsage(count);
+            return CaptureUsage(
+                count,
+                cancellationToken);
         }
 
-        private void CaptureInitialSample()
+        private void CaptureInitialSample(
+            CancellationToken cancellationToken)
         {
             _previousSamples.Clear();
 
-            foreach (Process process in Process.GetProcesses())
+            Process[] processes =
+                Process.GetProcesses();
+
+            try
             {
-                try
+                foreach (Process process in processes)
                 {
-                    _previousSamples[process.Id] =
-                        new ProcessSample(
-                            process.ProcessName,
-                            process.TotalProcessorTime);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        _previousSamples[process.Id] =
+                            new ProcessSample(
+                                process.ProcessName,
+                                process.TotalProcessorTime);
+                    }
+                    catch
+                    {
+                        // Algunos procesos pueden finalizar o impedir
+                        // consultar sus tiempos mientras se enumeran.
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
                 }
-                catch
-                {
-                    // Algunos procesos pueden finalizar o impedir
-                    // consultar sus tiempos mientras se enumeran.
-                }
-                finally
-                {
-                    process.Dispose();
-                }
+            }
+            finally
+            {
+                DisposeProcesses(processes);
             }
 
             _previousTimestamp = DateTime.UtcNow;
@@ -68,7 +84,8 @@ namespace CoreVigil.Monitoring
         }
 
         private IReadOnlyList<ProcessSnapshot> CaptureUsage(
-            int count)
+            int count,
+            CancellationToken cancellationToken)
         {
             DateTime currentTimestamp = DateTime.UtcNow;
 
@@ -81,61 +98,73 @@ namespace CoreVigil.Monitoring
             var snapshots =
                 new List<ProcessSnapshot>();
 
-            foreach (Process process in Process.GetProcesses())
+            Process[] processes =
+                Process.GetProcesses();
+
+            try
             {
-                try
+                foreach (Process process in processes)
                 {
-                    var currentSample =
-                        new ProcessSample(
-                            process.ProcessName,
-                            process.TotalProcessorTime);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    currentSamples[process.Id] =
-                        currentSample;
-
-                    if (!_previousSamples.TryGetValue(
-                            process.Id,
-                            out ProcessSample previousSample))
+                    try
                     {
-                        continue;
-                    }
+                        var currentSample =
+                            new ProcessSample(
+                                process.ProcessName,
+                                process.TotalProcessorTime);
 
-                    double processorMilliseconds =
-                        (currentSample.ProcessorTime -
-                         previousSample.ProcessorTime)
-                        .TotalMilliseconds;
+                        currentSamples[process.Id] =
+                            currentSample;
 
-                    double usagePercent = 0.0;
-
-                    if (elapsedMilliseconds > 0)
-                    {
-                        usagePercent =
-                            processorMilliseconds /
-                            elapsedMilliseconds /
-                            Environment.ProcessorCount *
-                            100.0;
-                    }
-
-                    snapshots.Add(
-                        new ProcessSnapshot
+                        if (!_previousSamples.TryGetValue(
+                                process.Id,
+                                out ProcessSample previousSample))
                         {
-                            ProcessId = process.Id,
-                            Name = currentSample.Name,
-                            CpuUsagePercent = Math.Clamp(
-                                usagePercent,
-                                0.0,
-                                100.0)
-                        });
+                            continue;
+                        }
+
+                        double processorMilliseconds =
+                            (currentSample.ProcessorTime -
+                             previousSample.ProcessorTime)
+                            .TotalMilliseconds;
+
+                        double usagePercent = 0.0;
+
+                        if (elapsedMilliseconds > 0)
+                        {
+                            usagePercent =
+                                processorMilliseconds /
+                                elapsedMilliseconds /
+                                Environment.ProcessorCount *
+                                100.0;
+                        }
+
+                        snapshots.Add(
+                            new ProcessSnapshot
+                            {
+                                ProcessId = process.Id,
+                                Name = currentSample.Name,
+                                CpuUsagePercent = Math.Clamp(
+                                    usagePercent,
+                                    0.0,
+                                    100.0)
+                            });
+                    }
+                    catch
+                    {
+                        // El proceso puede desaparecer entre la enumeración
+                        // y la lectura de sus propiedades.
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
                 }
-                catch
-                {
-                    // El proceso puede desaparecer entre la enumeración
-                    // y la lectura de sus propiedades.
-                }
-                finally
-                {
-                    process.Dispose();
-                }
+            }
+            finally
+            {
+                DisposeProcesses(processes);
             }
 
             _previousSamples.Clear();
@@ -153,6 +182,15 @@ namespace CoreVigil.Monitoring
                 .OrderByDescending(snapshot => snapshot.CpuUsagePercent)
                 .Take(count)
                 .ToArray();
+        }
+
+        private static void DisposeProcesses(
+            IEnumerable<Process> processes)
+        {
+            foreach (Process process in processes)
+            {
+                process.Dispose();
+            }
         }
 
         private sealed record ProcessSample(

@@ -140,6 +140,7 @@ namespace CoreVigil.UI
             // como una ventana normal en la barra de tareas.
             ShowInTaskbar =
                 true;
+            ApplyAltTabVisibility();
 
             HudLayoutProfile profile =
                 _hudLayoutService.GetProfile(this);
@@ -176,6 +177,7 @@ namespace CoreVigil.UI
             // que cuando el usuario cambia manualmente desde el modo Full.
             ShowInTaskbar =
                 false;
+            ApplyAltTabVisibility();
 
             HudRoot.Margin =
                 new Thickness(0);

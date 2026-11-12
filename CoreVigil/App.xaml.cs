@@ -1,5 +1,5 @@
-﻿using System.Threading;
-using System.Windows;
+﻿using System.Windows;
+using CoreVigil.Services;
 
 namespace CoreVigil
 {
@@ -11,17 +11,16 @@ namespace CoreVigil
         private const string SingleInstanceMutexName =
             "Local\\CoreVigil.SingleInstance";
 
-        private Mutex? _singleInstanceMutex;
+        private SingleInstanceGuard? _singleInstanceGuard;
 
         protected override void OnStartup(
             StartupEventArgs e)
         {
-            _singleInstanceMutex = new Mutex(
-                initiallyOwned: true,
-                name: SingleInstanceMutexName,
-                createdNew: out bool createdNew);
+            _singleInstanceGuard =
+                new SingleInstanceGuard(
+                    SingleInstanceMutexName);
 
-            if (!createdNew)
+            if (!_singleInstanceGuard.TryAcquire())
             {
                 System.Windows.MessageBox.Show(
                     "CoreVigil ya esta en ejecucion.",
@@ -39,9 +38,8 @@ namespace CoreVigil
         protected override void OnExit(
             ExitEventArgs e)
         {
-            _singleInstanceMutex?.ReleaseMutex();
-            _singleInstanceMutex?.Dispose();
-            _singleInstanceMutex = null;
+            _singleInstanceGuard?.Dispose();
+            _singleInstanceGuard = null;
 
             base.OnExit(e);
         }

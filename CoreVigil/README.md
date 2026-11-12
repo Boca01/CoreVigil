@@ -22,7 +22,7 @@ CoreVigil dispone actualmente de:
 - Inicio automatico configurable con Windows.
 - Instancia unica de la aplicacion.
 - Diagnostico interno con sesiones CSV.
-- Proyecto de pruebas automatizadas con linea base de 26/26 pruebas en verde.
+- Proyecto de pruebas automatizadas con linea base de 34/34 pruebas en verde.
 
 ## Arquitectura
 
@@ -65,11 +65,14 @@ Las pruebas prolongadas Full y Mini fueron completadas y analizadas. No mostraro
 
 ## Pruebas automatizadas
 
-La linea base actual es de 26/26 pruebas correctas:
+La linea base actual es de 34/34 pruebas correctas:
 - 8 de agrupacion de procesos;
 - 6 de persistencia de preferencias del HUD;
 - 4 de invariantes del diagnostico runtime;
-- 8 de escritura CSV y retencion de logs.
+- 10 de escritura CSV, reintento, limite de buffer y retencion de logs;
+- 1 de propiedad del mutex de instancia unica;
+- 1 de cancelacion del monitor de procesos;
+- 4 del cálculo y fallback de frecuencia de CPU.
 
 Las pruebas de archivos utilizan rutas temporales para no modificar la configuracion ni los logs reales de CoreVigil.
 
@@ -81,6 +84,7 @@ Consulta docs/TESTING.md.
 - docs/HUD.md: HUD Full, Mini, opacidad y persistencia visual.
 - docs/DIAGNOSTICS.md: diagnostico interno y logs.
 - docs/TESTING.md: validaciones manuales, prolongadas y automatizadas.
+- docs/MEJORAS_Y_DECISIONES.md: motivo de las mejoras, mutex, cancelacion, diagnostico y Alt+Tab.
 - docs/ROADMAP.md: prioridades futuras.
 - docs/CHANGELOG.md: cambios notables bajo Keep a Changelog 1.1.0.
 
@@ -88,4 +92,4 @@ Consulta docs/TESTING.md.
 
 El HUD Full y Mini, la persistencia independiente de posiciones, el cambio de modos, el Top 8 revisado, la ocultacion de Mini en la barra de tareas y el control persistente de opacidad han sido validados manualmente.
 
-Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. Prioridad 1 esta en progreso y dispone de una primera barrera automatizada de 26/26 pruebas en verde.
+Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. Full aparece y Mini queda excluido de Alt+Tab segun la validacion manual del usuario. Prioridad 1 esta en progreso y dispone de una primera barrera automatizada de 34/34 pruebas en verde.

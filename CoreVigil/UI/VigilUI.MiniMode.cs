@@ -77,6 +77,7 @@ namespace CoreVigil.UI
             // y recupera su acceso desde la barra de tareas.
             ShowInTaskbar =
                 true;
+            ApplyAltTabVisibility();
 
             HudLayoutProfile profile =
                 _hudLayoutService.GetProfile(this);
@@ -189,6 +190,7 @@ namespace CoreVigil.UI
             // y no necesita ocupar espacio en la barra de tareas.
             ShowInTaskbar =
                 false;
+            ApplyAltTabVisibility();
 
             HudRoot.Margin =
                 new Thickness(0);

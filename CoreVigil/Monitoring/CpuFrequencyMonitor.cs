@@ -15,6 +15,8 @@ namespace CoreVigil.Monitoring
     {
         private const int ProcessorInformation = 11;
         private const uint ErrorSuccess = 0;
+        private const uint PdhCStatusValidData = 0;
+        private const uint PdhCStatusNewData = 1;
         private const uint PdhFormatDouble = 0x00000200;
 
         private const string ProcessorPerformancePath =
@@ -30,29 +32,64 @@ namespace CoreVigil.Monitoring
             OpenPerformanceQuery();
         }
 
-        public Task<CpuFrequencySnapshot> GetSnapshotAsync(
+        public async Task<CpuFrequencySnapshot> GetSnapshotAsync(
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             GetProcessorPowerInformation(
+                out double currentMhz,
                 out double maximumMhz,
                 out double limitMhz);
 
-            double performancePercent =
+            double? performancePercent =
                 ReadProcessorPerformance();
 
-            double estimatedCurrentMhz =
-                maximumMhz * performancePercent / 100.0;
+            if (!performancePercent.HasValue && currentMhz <= 0.0)
+            {
+                await Task.Delay(
+                    TimeSpan.FromMilliseconds(250),
+                    cancellationToken);
 
-            return Task.FromResult(
-                new CpuFrequencySnapshot
-                {
-                    CurrentMhz = estimatedCurrentMhz,
-                    MaximumMhz = maximumMhz,
-                    LimitMhz = limitMhz,
-                    Timestamp = DateTime.Now
-                });
+                GetProcessorPowerInformation(
+                    out currentMhz,
+                    out maximumMhz,
+                    out limitMhz);
+
+                performancePercent =
+                    ReadProcessorPerformance();
+            }
+
+            double measuredCurrentMhz =
+                CalculateCurrentFrequencyMhz(
+                    currentMhz,
+                    maximumMhz,
+                    performancePercent);
+
+            return new CpuFrequencySnapshot
+            {
+                CurrentMhz = measuredCurrentMhz,
+                MaximumMhz = maximumMhz,
+                LimitMhz = limitMhz,
+                Timestamp = DateTime.Now
+            };
+        }
+
+        internal static double CalculateCurrentFrequencyMhz(
+            double nativeCurrentMhz,
+            double maximumMhz,
+            double? performancePercent)
+        {
+            if (!performancePercent.HasValue ||
+                !double.IsFinite(performancePercent.Value) ||
+                performancePercent.Value < 0.0)
+            {
+                return Math.Max(0.0, nativeCurrentMhz);
+            }
+
+            return Math.Max(
+                0.0,
+                maximumMhz * performancePercent.Value / 100.0);
         }
 
         private void OpenPerformanceQuery()
@@ -83,7 +120,7 @@ namespace CoreVigil.Monitoring
             }
         }
 
-        private double ReadProcessorPerformance()
+        private double? ReadProcessorPerformance()
         {
             uint status =
                 PdhCollectQueryData(_queryHandle);
@@ -95,7 +132,7 @@ namespace CoreVigil.Monitoring
             if (!_hasInitialSample)
             {
                 _hasInitialSample = true;
-                return 100.0;
+                return null;
             }
 
             status = PdhGetFormattedCounterValue(
@@ -108,17 +145,20 @@ namespace CoreVigil.Monitoring
                 status,
                 "No fue posible leer el rendimiento del procesador.");
 
-            if (value.CStatus != ErrorSuccess)
+            if (value.CStatus != PdhCStatusValidData &&
+                value.CStatus != PdhCStatusNewData)
             {
-                throw new InvalidOperationException(
-                    $"PDH devolvió una muestra no válida. " +
-                    $"Código: 0x{value.CStatus:X8}.");
+                return null;
             }
 
-            return Math.Max(0.0, value.DoubleValue);
+            return double.IsFinite(value.DoubleValue) &&
+                value.DoubleValue >= 0.0
+                    ? value.DoubleValue
+                    : null;
         }
 
         private static void GetProcessorPowerInformation(
+            out double currentMhz,
             out double maximumMhz,
             out double limitMhz)
         {
@@ -151,6 +191,7 @@ namespace CoreVigil.Monitoring
 
                 double maximumTotal = 0;
                 double limitTotal = 0;
+                double currentTotal = 0;
 
                 for (int i = 0; i < processorCount; i++)
                 {
@@ -165,7 +206,11 @@ namespace CoreVigil.Monitoring
 
                     maximumTotal += information.MaxMhz;
                     limitTotal += information.MhzLimit;
+                    currentTotal += information.CurrentMhz;
                 }
+
+                currentMhz =
+                    currentTotal / processorCount;
 
                 maximumMhz =
                     maximumTotal / processorCount;

@@ -11,11 +11,15 @@ namespace CoreVigil.Diagnostics
     public sealed class RuntimeLogWriter
     {
         private const int RetentionDays = 7;
+        private const int MaximumBufferedSamples = 10_000;
 
         private const long MaximumLogsSizeBytes =
             25L * 1024L * 1024L;
         private readonly List<RuntimeSample> _buffer =
             new();
+        private readonly object _bufferLock = new();
+        private readonly SemaphoreSlim _flushSemaphore = new(1, 1);
+        private long _droppedSampleCount;
         private readonly string _logsDirectory;
 
         private readonly string _logPath;
@@ -121,26 +125,97 @@ namespace CoreVigil.Diagnostics
         public string LogPath =>
             _logPath;
 
-        public void Add(
+        public int BufferedSampleCount
+        {
+            get
+            {
+                lock (_bufferLock)
+                {
+                    return _buffer.Count;
+                }
+            }
+        }
+
+        public long DroppedSampleCount
+        {
+            get
+            {
+                lock (_bufferLock)
+                {
+                    return _droppedSampleCount;
+                }
+            }
+        }
+
+        public bool Add(
             RuntimeSample sample)
         {
-            _buffer.Add(sample);
+            lock (_bufferLock)
+            {
+                bool droppedOldestSample =
+                    _buffer.Count == MaximumBufferedSamples;
+
+                if (droppedOldestSample)
+                {
+                    _buffer.RemoveAt(0);
+                    _droppedSampleCount++;
+                }
+
+                _buffer.Add(sample);
+                return droppedOldestSample;
+            }
         }
 
         public async Task FlushAsync()
         {
-            if (_buffer.Count == 0)
-            {
-                return;
-            }
+            await _flushSemaphore.WaitAsync();
 
+            try
+            {
+                RuntimeSample[] samples;
+
+                lock (_bufferLock)
+                {
+                    if (_buffer.Count == 0)
+                    {
+                        return;
+                    }
+
+                    samples = _buffer.ToArray();
+                    _buffer.Clear();
+                }
+
+                try
+                {
+                    await WriteSamplesAsync(samples);
+                }
+                catch
+                {
+                    lock (_bufferLock)
+                    {
+                        _buffer.InsertRange(0, samples);
+
+                        while (_buffer.Count > MaximumBufferedSamples)
+                        {
+                            _buffer.RemoveAt(0);
+                            _droppedSampleCount++;
+                        }
+                    }
+
+                    throw;
+                }
+            }
+            finally
+            {
+                _flushSemaphore.Release();
+            }
+        }
+
+        private async Task WriteSamplesAsync(
+            RuntimeSample[] samples)
+        {
             bool writeHeader =
                 !File.Exists(_logPath);
-
-            RuntimeSample[] samples =
-                _buffer.ToArray();
-
-            _buffer.Clear();
 
             await using var writer =
                 new StreamWriter(
@@ -186,24 +261,24 @@ namespace CoreVigil.Diagnostics
                             sample.SystemMemoryPercent),
                         FormatDouble(
                             sample.CoreVigilCpuPercent),
-                            sample.WorkingSetBytes
-                                .ToString(
-                                    CultureInfo.InvariantCulture),
-                            sample.ManagedHeapBytes
-                                .ToString(
-                                    CultureInfo.InvariantCulture),
-                            sample.GcHeapSizeBytes
-                                .ToString(
-                                    CultureInfo.InvariantCulture),
-                            sample.GcIndex
-                                .ToString(
-                                    CultureInfo.InvariantCulture),
-                            sample.IsManagedHeapReadingValid
-                                ? "true"
-                                : "false",
-                            sample.IsHudVisible
-                                ? "true"
-                                : "false",
+                        sample.WorkingSetBytes
+                            .ToString(
+                                CultureInfo.InvariantCulture),
+                        sample.ManagedHeapBytes
+                            .ToString(
+                                CultureInfo.InvariantCulture),
+                        sample.GcHeapSizeBytes
+                            .ToString(
+                                CultureInfo.InvariantCulture),
+                        sample.GcIndex
+                            .ToString(
+                                CultureInfo.InvariantCulture),
+                        sample.IsManagedHeapReadingValid
+                            ? "true"
+                            : "false",
+                        sample.IsHudVisible
+                            ? "true"
+                            : "false",
                         sample.IsTopmost
                             ? "true"
                             : "false",
@@ -211,6 +286,8 @@ namespace CoreVigil.Diagnostics
 
                 await writer.WriteLineAsync(line);
             }
+
+            await writer.FlushAsync();
         }
 
         private static string FormatDateTime(
