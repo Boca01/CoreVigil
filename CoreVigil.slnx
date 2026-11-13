@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Doc/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="CoreVigil.Tests/CoreVigil.Tests.csproj" Id="9af7274c-b0b1-4730-8628-30247141f466" />
   <Project Path="CoreVigil/CoreVigil.csproj" />
 </Solution>

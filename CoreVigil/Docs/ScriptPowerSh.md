@@ -1,1 +1,0 @@
-powershell -ExecutionPolicy Bypass -File "C:\Dev\Sync-RepositoryVSHome.ps1" -Project CoreVigil

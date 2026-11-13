@@ -2,6 +2,14 @@
 
 CoreVigil es un monitor ligero para Windows orientado a mostrar telemetria esencial del sistema en un HUD translucido, compacto y persistente.
 
+## Estado del proyecto
+
+CoreVigil ha completado su alcance funcional actual y se mantiene en modo mantenimiento.
+
+La linea base validada es de 43/43 pruebas automatizadas en verde, con compilacion final de 0 errores y 0 advertencias.
+
+Las contribuciones son bienvenidas cuando resuelvan una necesidad concreta y mantengan el principio del proyecto: ofrecer telemetria esencial de forma ligera, desacoplada y sin convertir el HUD en un segundo Administrador de tareas.
+
 ## Estado actual
 
 CoreVigil dispone actualmente de:
@@ -79,6 +87,24 @@ Las pruebas de archivos utilizan rutas temporales para no modificar la configura
 
 Consulta docs/TESTING.md.
 
+## Compilacion y pruebas
+
+Requisitos principales:
+
+- Windows.
+- .NET 10 SDK.
+- Entorno compatible con proyectos WPF para Windows.
+
+Desde la raiz del repositorio:
+
+dotnet restore
+
+dotnet build
+
+dotnet test
+
+La linea base validada al preparar la publicacion publica es de 43/43 pruebas correctas.
+
 ## Documentacion
 
 - docs/ARCHITECTURE.md: arquitectura y responsabilidades.
@@ -88,6 +114,14 @@ Consulta docs/TESTING.md.
 - docs/MEJORAS_Y_DECISIONES.md: motivo de las mejoras, mutex, cancelacion, diagnostico y Alt+Tab.
 - docs/ROADMAP.md: prioridades futuras.
 - docs/CHANGELOG.md: cambios notables bajo Keep a Changelog 1.1.0.
+
+## Contribuciones
+
+Las contribuciones son bienvenidas.
+
+Antes de proponer cambios, consulta CONTRIBUTING.md para conocer los criterios de arquitectura, pruebas, documentacion y alcance del proyecto.
+
+Los problemas de seguridad no deben publicarse con detalles explotables en issues o pull requests publicos. Consulta SECURITY.md.
 
 ## Estado de validacion
 
@@ -100,3 +134,9 @@ La Prioridad 2 de robustez de procesos queda completada y la linea base global a
 La validacion de geometria y pantallas fue completada en el entorno disponible con un solo monitor, incluyendo cambios de escala/DPI, funcionamiento de Full y Mini y restauracion despues de reiniciar. Las pruebas reales con varios monitores, DPI mixto entre pantallas y desconexion de una pantalla secundaria quedan pendientes por limitacion del entorno y no se consideran un defecto funcional observado.
 
 La experiencia Mini se conserva deliberadamente como telemetria de un vistazo. No se agregan nuevos controles ni informacion adicional en el alcance actual salvo que aparezca una necesidad funcional demostrada.
+
+## Licencia
+
+CoreVigil se distribuye bajo GNU General Public License v3.0 (GPLv3).
+
+Consulta LICENSE para los terminos completos y THIRD-PARTY-NOTICES.md para las dependencias y avisos de terceros identificados durante la preparacion del repositorio publico.
