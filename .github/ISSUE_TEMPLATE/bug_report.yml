@@ -1,0 +1,74 @@
+name: Reporte de bug
+description: Reporta un problema reproducible en CoreVigil.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar un problema. Incluye informacion suficiente para reproducirlo sin compartir datos personales, credenciales ni logs sensibles.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificaciones previas
+      options:
+        - label: He revisado los issues existentes y no encontre el mismo problema.
+          required: true
+        - label: El problema ocurre en una copia sin modificaciones de CoreVigil o he indicado claramente las modificaciones realizadas.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version, commit o rama
+      description: Indica la version, hash de commit o rama donde observaste el problema.
+      placeholder: master / commit abc1234
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Modo afectado
+      options:
+        - Full
+        - Mini
+        - Ambos
+        - Bandeja / ciclo de vida
+        - Diagnostico
+        - Procesos / telemetria
+        - Otro
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripcion del problema
+      description: Explica que sucede y que esperabas que sucediera.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Pasos para reproducir
+      description: Incluye solo los pasos necesarios y seguros para reproducir el problema.
+      placeholder: |
+        1. Abrir CoreVigil...
+        2. Cambiar...
+        3. Observar...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Entorno relevante
+      description: Version de Windows, escala/DPI, numero de monitores u otros datos tecnicos relevantes. No incluyas informacion personal.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Informacion adicional
+      description: Capturas, mensajes de error u otra informacion no sensible que pueda ayudar.

@@ -1,0 +1,48 @@
+name: Propuesta de mejora
+description: Propone una mejora alineada con el alcance ligero de CoreVigil.
+title: "[Mejora]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        CoreVigil busca seguir siendo un monitor ligero y de telemetria esencial. Explica la necesidad antes de proponer complejidad nueva.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificaciones previas
+      options:
+        - label: He revisado los issues existentes y no encontre una propuesta equivalente.
+          required: true
+        - label: La propuesta mantiene a CoreVigil como monitor ligero y no pretende convertirlo en un Administrador de tareas completo.
+          required: true
+
+  - type: textarea
+    id: need
+    attributes:
+      label: Necesidad o problema
+      description: Describe la necesidad concreta que la propuesta intenta resolver.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Explica la mejora deseada sin asumir que debe implementarse de una forma especifica.
+    validations:
+      required: true
+
+  - type: textarea
+    id: value
+    attributes:
+      label: Valor para CoreVigil
+      description: Explica por que esta mejora aporta valor suficiente para ampliar el alcance actual.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Indica si existe una solucion mas simple o una forma de resolver la necesidad sin agregar nueva funcionalidad.
