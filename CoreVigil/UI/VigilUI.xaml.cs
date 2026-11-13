@@ -134,8 +134,14 @@ namespace CoreVigil.UI
             private async Task RunDiagnosticsAsync(
              CancellationToken cancellationToken)
         {
-            if (_runtimeDiagnosticsService is null ||
-                _runtimeLogWriter is null)
+            RuntimeDiagnosticsService? runtimeDiagnosticsService =
+                _runtimeDiagnosticsService;
+
+            RuntimeLogWriter? runtimeLogWriter =
+                _runtimeLogWriter;
+
+            if (runtimeDiagnosticsService is null ||
+                runtimeLogWriter is null)
             {
                 return;
             }
@@ -148,9 +154,9 @@ namespace CoreVigil.UI
                 try
                 {
                     RuntimeSample sample =
-                        _runtimeDiagnosticsService.Capture(
+                        runtimeDiagnosticsService.Capture(
                             _viewModel.ApplicationElapsed,
-                            _viewModel.CpuUsagePercent,
+                            _viewModel.CpuUsagePercent, 
                             _viewModel.CpuFrequencyMhz,
                             _viewModel.MemorySnapshot?.UsagePercent
                                 ?? 0.0,
@@ -159,7 +165,7 @@ namespace CoreVigil.UI
                             Topmost,
                             _trayIconService.CurrentState.ToString());
 
-                    if (_runtimeLogWriter.Add(sample))
+                    if (runtimeLogWriter.Add(sample))
                     {
                         SetDiagnosticsStatus(
                             "Aviso: muestras antiguas perdidas");
@@ -167,7 +173,7 @@ namespace CoreVigil.UI
 
                     if (DateTime.UtcNow >= nextFlushUtc)
                     {
-                        await _runtimeLogWriter.FlushAsync();
+                        await runtimeLogWriter.FlushAsync();
                         UpdateDiagnosticsStatusAfterFlush();
 
                         nextFlushUtc =
@@ -188,7 +194,7 @@ namespace CoreVigil.UI
                         $"Falló una iteración del diagnóstico: {ex}");
 
                     SetDiagnosticsStatus(
-                        _runtimeLogWriter?.DroppedSampleCount > 0
+                        runtimeLogWriter.DroppedSampleCount > 0
                             ? "Aviso: muestras antiguas perdidas"
                             : "Error guardando diagnóstico");
 

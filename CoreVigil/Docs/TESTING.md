@@ -8,9 +8,9 @@ La validacion manual no se considera equivalente a una suite automatizada. Ambos
 
 ## Linea base automatizada
 
-Estado actual validado: 34 de 34 pruebas correctas.
+Estado actual validado: 43 de 43 pruebas correctas.
 
-Las pruebas viven en el proyecto `CoreVigil.Tests` y actualmente se organizan en siete suites:
+Las pruebas viven en el proyecto CoreVigil.Tests y actualmente se organizan en ocho suites:
 
 ### ProcessGroupingServiceTests - 8 pruebas
 
@@ -66,9 +66,15 @@ Las pruebas se ejecutan sobre carpetas temporales y no utilizan los logs reales 
 
 Protege la propiedad exclusiva del mutex, la salida de la segunda instancia sin liberación indebida y la adquisición posterior al cierre del propietario.
 
-### ProcessMonitorTests - 1 prueba
+#### ProcessMonitorTests - 6 pruebas
 
-Protege la cancelación del monitor durante el intervalo de muestreo inicial.
+Protege:
+- cancelacion del monitor durante el intervalo de muestreo inicial;
+- retorno de 0 % sin tiempo transcurrido;
+- retorno de 0 % con cantidad de procesadores invalida;
+- normalizacion del consumo por cantidad de procesadores;
+- limite inferior de 0 % ante actividad negativa;
+- limite superior de 100 % ante actividad excesiva.
 
 ### CpuFrequencyMonitorTests - 4 pruebas
 
@@ -77,6 +83,14 @@ Protege:
 - cálculo de frecuencia a partir del porcentaje de rendimiento PDH;
 - conservación de frecuencias turbo superiores al máximo nominal;
 - fallback cuando PDH entrega un valor no finito.
+
+#### CpuMonitorTests - 4 pruebas
+
+Protege:
+- retorno de 0 % cuando no existe tiempo transcurrido;
+- calculo del porcentaje con actividad parcial;
+- retorno de 100 % cuando no existe tiempo idle;
+- proteccion contra un resultado negativo cuando idle supera al tiempo total.
 
 ## Validaciones manuales realizadas
 
@@ -131,6 +145,22 @@ Protege:
 - Opacidad de fondo persistente.
 - Offsets del selector de opacidad persistentes.
 
+### Geometria y DPI
+
+Validado en el entorno disponible con un solo monitor:
+- cambio de escala/DPI sin incidencias observadas;
+- HUD Full funcional despues del cambio de escala;
+- HUD Mini funcional despues del cambio de escala;
+- cambio entre Full y Mini funcional;
+- restauracion despues de reiniciar sin dejar el HUD fuera del area visible.
+
+No ejecutado por limitacion del entorno:
+- varios monitores;
+- DPI mixto entre monitores;
+- cambio de Full y Mini entre pantallas;
+- desconexion o retirada de una pantalla secundaria;
+- persistencia del HUD y del selector de opacidad entre monitores.
+
 ### Procesos
 
 - Vista INDIVIDUAL.
@@ -177,7 +207,12 @@ Sesion: `runtime-20261110-075548.csv`.
 
 Full y Mini son estables con la evidencia disponible. No existe evidencia clara de fugas ni degradacion progresiva en las sesiones analizadas.
 
-La Prioridad 0 queda tecnicamente completada y la Prioridad 1 dispone ya de una linea base de 26 pruebas automatizadas.
+La Prioridad 0 queda tecnicamente completada. La Prioridad 1 de observabilidad y pruebas automatizadas queda completada con una linea base validada de 38/38 pruebas en verde.
+
+La Prioridad 2 de robustez de procesos queda completada. La linea base global actual queda validada en 43/43 pruebas automatizadas en verde y compilacion con 0 errores y 0 advertencias.
+
+La validacion de geometria y DPI queda completada para el entorno disponible de monitor unico. Los escenarios multimonitor permanecen no ejecutados por limitacion del entorno y no se registran como aprobados.
+
 
 ## Siguientes pruebas recomendadas
 

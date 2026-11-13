@@ -20,7 +20,7 @@ La base funcional incluye:
 - bandeja y autoinicio;
 - instancia unica;
 - diagnostico interno;
-- proyecto `CoreVigil.Tests` con linea base de 26 pruebas automatizadas.
+- proyecto CoreVigil.Tests con linea base de 43 pruebas automatizadas.
 
 ## Prioridad 0 - Validacion principal completada
 
@@ -35,11 +35,12 @@ Estado: COMPLETADA.
 
 ## Prioridad 1 - Observabilidad y pruebas automatizadas
 
-Estado: EN PROGRESO.
+Estado: COMPLETADA.
 
 Completado hasta el checkpoint actual:
 - proyecto `CoreVigil.Tests` integrado a la solucion;
-- 34/34 pruebas automatizadas en verde;
+- 38/38 pruebas automatizadas en verde;
+- calculo de uso global de CPU aislado y protegido mediante cuatro pruebas deterministas;
 - cobertura inicial de ProcessGroupingService;
 - cobertura inicial de HudSettingsService;
 - cobertura de invariantes publicos de RuntimeDiagnosticsService;
@@ -62,8 +63,35 @@ Siguiente frente:
 - Comparar de nuevo con Administrador de tareas si aparecen discrepancias sostenidas.
 - Mantener el Top 8 como resumen, no como listado completo del sistema.
 
+Estado: COMPLETADA.
+
+Completado hasta el checkpoint actual:
+- calculo de CPU por proceso aislado de la enumeracion del sistema;
+- normalizacion por cantidad de procesadores protegida mediante pruebas deterministas;
+- limites de 0 % y 100 % protegidos mediante pruebas;
+- cantidad de procesadores y tiempo transcurrido invalidos protegidos;
+- ProcessMonitorTests ampliado a 6 pruebas;
+- linea base global validada de 43/43 pruebas en verde;
+- compilacion validada con 0 errores y 0 advertencias.
+- validacion manual de procesos iniciados y cerrados durante la monitorizacion completada sin incidencias observadas;
+- no se observaron discrepancias sostenidas que justificaran modificar el calculo o el Top 8.
+
 ## Prioridad 3 - Geometria y pantallas
 
+Estado: VALIDACION PARCIAL COMPLETADA.
+
+Validado en el entorno disponible:
+- cambio de escala/DPI en monitor unico sin incidencias observadas;
+- Full y Mini permanecen funcionales despues del cambio de escala;
+- restauracion despues de reiniciar validada en monitor unico;
+- posicion visible del HUD conservada en el entorno probado.
+
+Pendiente por limitacion del entorno:
+- validacion real con varios monitores;
+- DPI mixto entre monitores;
+- cambio de Full y Mini entre pantallas;
+- restauracion despues de desconectar o retirar una pantalla secundaria;
+- persistencia del HUD y del selector de opacidad entre diferentes monitores.
 - Validar varios monitores.
 - Validar DPI distinto entre monitores.
 - Validar cambio de monitor con Full y Mini.
@@ -71,6 +99,14 @@ Siguiente frente:
 - Revisar el comportamiento de posiciones persistentes del HUD y del selector de opacidad en configuraciones multimonitor.
 
 ## Prioridad 4 - Experiencia Mini
+
+Estado: COMPLETADA POR DECISION DE DISEÑO.
+
+Decision:
+- no agregar nuevos controles al modo Mini en el alcance actual;
+- no agregar informacion adicional que aumente el ruido visual;
+- conservar Mini como telemetria de un vistazo;
+- las mejoras futuras quedan condicionadas a una necesidad funcional demostrada.
 
 Solo despues de estabilidad medida:
 - valorar control Topmost directamente desde Mini;

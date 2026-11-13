@@ -119,7 +119,7 @@ namespace CoreVigil.Monitoring
 
                         if (!_previousSamples.TryGetValue(
                                 process.Id,
-                                out ProcessSample previousSample))
+                                out ProcessSample? previousSample))
                         {
                             continue;
                         }
@@ -129,16 +129,10 @@ namespace CoreVigil.Monitoring
                              previousSample.ProcessorTime)
                             .TotalMilliseconds;
 
-                        double usagePercent = 0.0;
-
-                        if (elapsedMilliseconds > 0)
-                        {
-                            usagePercent =
-                                processorMilliseconds /
-                                elapsedMilliseconds /
-                                Environment.ProcessorCount *
-                                100.0;
-                        }
+                        double usagePercent = CalculateUsagePercent(
+                            processorMilliseconds,
+                            elapsedMilliseconds,
+                            Environment.ProcessorCount);
 
                         snapshots.Add(
                             new ProcessSnapshot
@@ -182,6 +176,29 @@ namespace CoreVigil.Monitoring
                 .OrderByDescending(snapshot => snapshot.CpuUsagePercent)
                 .Take(count)
                 .ToArray();
+        }
+
+        internal static double CalculateUsagePercent(
+            double processorMilliseconds,
+            double elapsedMilliseconds,
+            int processorCount)
+        {
+            if (elapsedMilliseconds <= 0.0 ||
+                processorCount <= 0)
+            {
+                return 0.0;
+            }
+
+            double usagePercent =
+                processorMilliseconds /
+                elapsedMilliseconds /
+                processorCount *
+                100.0;
+
+            return Math.Clamp(
+                usagePercent,
+                0.0,
+                100.0);
         }
 
         private static void DisposeProcesses(

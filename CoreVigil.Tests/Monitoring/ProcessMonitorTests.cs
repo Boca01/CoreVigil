@@ -24,5 +24,65 @@ namespace CoreVigil.Tests.Monitoring
             await Assert.ThrowsAnyAsync<OperationCanceledException>(
                 () => capture);
         }
+
+        [Fact]
+        public void CalculateUsagePercent_SinTiempoTranscurrido_DevuelveCero()
+        {
+            double usagePercent =
+                ProcessMonitor.CalculateUsagePercent(
+                    processorMilliseconds: 100.0,
+                    elapsedMilliseconds: 0.0,
+                    processorCount: 8);
+
+            Assert.Equal(0.0, usagePercent);
+        }
+
+        [Fact]
+        public void CalculateUsagePercent_SinProcesadores_DevuelveCero()
+        {
+            double usagePercent =
+                ProcessMonitor.CalculateUsagePercent(
+                    processorMilliseconds: 100.0,
+                    elapsedMilliseconds: 1000.0,
+                    processorCount: 0);
+
+            Assert.Equal(0.0, usagePercent);
+        }
+
+        [Fact]
+        public void CalculateUsagePercent_ActividadNormal_NormalizaPorProcesadores()
+        {
+            double usagePercent =
+                ProcessMonitor.CalculateUsagePercent(
+                    processorMilliseconds: 400.0,
+                    elapsedMilliseconds: 1000.0,
+                    processorCount: 4);
+
+            Assert.Equal(10.0, usagePercent);
+        }
+
+        [Fact]
+        public void CalculateUsagePercent_ActividadNegativa_NoDevuelveNegativo()
+        {
+            double usagePercent =
+                ProcessMonitor.CalculateUsagePercent(
+                    processorMilliseconds: -100.0,
+                    elapsedMilliseconds: 1000.0,
+                    processorCount: 4);
+
+            Assert.Equal(0.0, usagePercent);
+        }
+
+        [Fact]
+        public void CalculateUsagePercent_ActividadExcesiva_NoSuperaCien()
+        {
+            double usagePercent =
+                ProcessMonitor.CalculateUsagePercent(
+                    processorMilliseconds: 10000.0,
+                    elapsedMilliseconds: 1000.0,
+                    processorCount: 2);
+
+            Assert.Equal(100.0, usagePercent);
+        }
     }
 }

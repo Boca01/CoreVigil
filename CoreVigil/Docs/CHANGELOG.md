@@ -43,6 +43,8 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Fallback a la frecuencia actual reportada por Windows mientras PDH recopila un intervalo válido.
 - Aceptación de los estados PDH `VALID_DATA` y `NEW_DATA` para evitar descartar muestras válidas.
 - Pruebas para mutex, cancelación de procesos, capacidad del búfer y cálculo/fallback de frecuencia.
+- Cuatro pruebas deterministas para el calculo de uso global de CPU.
+- Cinco pruebas deterministas adicionales para el calculo de CPU por proceso, ampliando ProcessMonitorTests a seis pruebas.
 
 ### Changed
 
@@ -56,9 +58,14 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - El modo Mini deja de mostrarse en la barra de tareas y mantiene el acceso desde la bandeja del sistema.
 - La enumeración de procesos se ejecuta fuera del hilo de UI, comprueba cancelación entre procesos y libera los objetos pendientes.
 - La primera lectura de frecuencia deja de asumir 100 % de rendimiento y conserva frecuencias turbo por encima del máximo nominal.
+- El calculo de uso global de CPU se separa de la adquisicion de tiempos de Windows para proteger su logica mediante pruebas deterministas.
 - La opacidad se aplica al fondo visual del HUD sin reducir globalmente la opacidad de textos y controles.
 - La Prioridad 0 de validacion prolongada Full/Mini queda completada.
-- La Prioridad 1 avanza con una línea base automatizada de 34/34 pruebas en verde sobre agrupación, persistencia, diagnóstico, mutex, cancelación y frecuencia de CPU.
+- La Prioridad 1 de observabilidad y pruebas automatizadas queda completada con una linea base validada de 38/38 pruebas en verde.
+- La Prioridad 2 de robustez de procesos inicia con el calculo de CPU por proceso aislado de la enumeracion del sistema y una linea base global validada de 43/43 pruebas en verde.
+- La Prioridad 2 de robustez de procesos queda completada con una linea base global de 43/43 pruebas en verde y compilacion con 0 errores y 0 advertencias.
+- La validacion de geometria y DPI queda completada en el entorno disponible de monitor unico; los escenarios reales multimonitor permanecen no ejecutados por limitacion del entorno.
+- La experiencia Mini queda cerrada en el alcance actual por decision de diseño, conservandose como telemetria de un vistazo sin nuevos controles ni informacion adicional.
 
 ### Fixed
 
@@ -66,6 +73,7 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Corregida la restauracion de posicion y estado expandido del HUD.
 - Corregida la interferencia entre la posicion del modo Mini y la posicion del HUD Full.
 - Corregido el recorte prematuro de procesos que podia impedir que el Top 8 agrupado representara los grupos con mayor consumo real de las muestras disponibles.
+- Corregidas advertencias de nulabilidad en ProcessMonitor y en el ciclo de diagnostico de VigilUI sin suprimir CS8600 ni CS8602.
 
 ## Convenciones
 

@@ -22,7 +22,7 @@ CoreVigil dispone actualmente de:
 - Inicio automatico configurable con Windows.
 - Instancia unica de la aplicacion.
 - Diagnostico interno con sesiones CSV.
-- Proyecto de pruebas automatizadas con linea base de 34/34 pruebas en verde.
+- Proyecto de pruebas automatizadas con linea base de 43/43 pruebas en verde.
 
 ## Arquitectura
 
@@ -65,14 +65,15 @@ Las pruebas prolongadas Full y Mini fueron completadas y analizadas. No mostraro
 
 ## Pruebas automatizadas
 
-La linea base actual es de 34/34 pruebas correctas:
+La linea base actual es de 43/43 pruebas correctas:
 - 8 de agrupacion de procesos;
 - 6 de persistencia de preferencias del HUD;
 - 4 de invariantes del diagnostico runtime;
 - 10 de escritura CSV, reintento, limite de buffer y retencion de logs;
 - 1 de propiedad del mutex de instancia unica;
-- 1 de cancelacion del monitor de procesos;
-- 4 del cálculo y fallback de frecuencia de CPU.
+- 6 de cancelacion y calculo de CPU del monitor de procesos;
+- 4 del calculo y fallback de frecuencia de CPU.
+- 4 del calculo de uso global de CPU.
 
 Las pruebas de archivos utilizan rutas temporales para no modificar la configuracion ni los logs reales de CoreVigil.
 
@@ -92,4 +93,10 @@ Consulta docs/TESTING.md.
 
 El HUD Full y Mini, la persistencia independiente de posiciones, el cambio de modos, el Top 8 revisado, la ocultacion de Mini en la barra de tareas y el control persistente de opacidad han sido validados manualmente.
 
-Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. Full aparece y Mini queda excluido de Alt+Tab segun la validacion manual del usuario. Prioridad 1 esta en progreso y dispone de una primera barrera automatizada de 34/34 pruebas en verde.
+Las pruebas prolongadas Full y Mini tambien fueron completadas y analizadas. Full aparece y Mini queda excluido de Alt+Tab segun la validacion manual del usuario. La Prioridad 1 de observabilidad y pruebas automatizadas queda completada con una linea base de 38/38 pruebas en verde.
+
+La Prioridad 2 de robustez de procesos queda completada y la linea base global actual es de 43/43 pruebas en verde.
+
+La validacion de geometria y pantallas fue completada en el entorno disponible con un solo monitor, incluyendo cambios de escala/DPI, funcionamiento de Full y Mini y restauracion despues de reiniciar. Las pruebas reales con varios monitores, DPI mixto entre pantallas y desconexion de una pantalla secundaria quedan pendientes por limitacion del entorno y no se consideran un defecto funcional observado.
+
+La experiencia Mini se conserva deliberadamente como telemetria de un vistazo. No se agregan nuevos controles ni informacion adicional en el alcance actual salvo que aparezca una necesidad funcional demostrada.

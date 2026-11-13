@@ -64,25 +64,37 @@ namespace CoreVigil.Monitoring
             ulong userDelta =
                 currentUserTime - _previousUserTime;
 
-            ulong totalDelta =
-                kernelDelta + userDelta;
-
-            double usagePercent = 0.0;
-
-            if (totalDelta > 0)
-            {
-                ulong busyDelta =
-                    totalDelta > idleDelta
-                        ? totalDelta - idleDelta
-                        : 0;
-
-                usagePercent =
-                    (double)busyDelta / totalDelta * 100.0;
-            }
+            double usagePercent = CalculateUsagePercent(
+                idleDelta,
+                kernelDelta,
+                userDelta);
 
             _previousIdleTime = currentIdleTime;
             _previousKernelTime = currentKernelTime;
             _previousUserTime = currentUserTime;
+
+            return usagePercent;
+        }
+
+        internal static double CalculateUsagePercent(
+            ulong idleDelta,
+            ulong kernelDelta,
+            ulong userDelta)
+        {
+            ulong totalDelta = kernelDelta + userDelta;
+
+            if (totalDelta == 0)
+            {
+                return 0.0;
+            }
+
+            ulong busyDelta =
+                totalDelta > idleDelta
+                    ? totalDelta - idleDelta
+                    : 0;
+
+            double usagePercent =
+                (double)busyDelta / totalDelta * 100.0;
 
             return Math.Clamp(
                 usagePercent,
