@@ -122,6 +122,7 @@ Protege:
 - Movimiento independiente.
 - Restauracion de posicion independiente.
 - El modo Mini no aparece en la barra de tareas y continua accesible desde la bandeja.
+- Topmost validado después del arranque de Windows: Mini permanece sobre otras aplicaciones sin requerir cambiar a Full ni reactivar manualmente la persistencia en ventana.
 
 ### Opacidad
 

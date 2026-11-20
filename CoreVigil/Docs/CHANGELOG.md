@@ -74,6 +74,7 @@ No se asignan versiones historicas que no hayan sido definidas formalmente. Los 
 - Corregida la interferencia entre la posicion del modo Mini y la posicion del HUD Full.
 - Corregido el recorte prematuro de procesos que podia impedir que el Top 8 agrupado representara los grupos con mayor consumo real de las muestras disponibles.
 - Corregidas advertencias de nulabilidad en ProcessMonitor y en el ciclo de diagnostico de VigilUI sin suprimir CS8600 ni CS8602.
+- Corregido el comportamiento de Topmost del modo Mini al iniciar CoreVigil con Windows, evitando que el HUD quede detrás de otras aplicaciones hasta reactivar manualmente la persistencia en ventana.
 
 ## Convenciones
 

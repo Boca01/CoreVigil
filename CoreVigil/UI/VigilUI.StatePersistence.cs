@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Threading;
 using CoreVigil.Services;
 
 namespace CoreVigil.UI
@@ -16,7 +17,25 @@ namespace CoreVigil.UI
             RoutedEventArgs e)
         {
             RestorePersistedVisualState();
+
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(ReapplyPersistedTopmost));
         }
+        private void ReapplyPersistedTopmost()
+        {
+            if (!Topmost)
+            {
+                return;
+            }
+
+            // ShowInTaskbar y los estilos Alt+Tab pueden modificar la ventana
+            // nativa durante la restauracion de Mini. Reaplicar Topmost despues
+            // de completar esa restauracion sincroniza nuevamente el orden Z.
+            Topmost = false;
+            Topmost = true;
+        }
+
 
         private void OnPersistedLocationChanged(
             object? sender,
